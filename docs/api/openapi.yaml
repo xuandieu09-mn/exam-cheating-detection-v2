@@ -1,0 +1,308 @@
+openapi: 3.1.0
+info:
+  title: Online Exam Cheating Detection API
+  version: 0.1.0
+  description: REST API for sessions, ingestion, incidents, and reviews.
+servers:
+  - url: http://localhost:8080/api
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    UUID:
+      type: string
+      format: uuid
+    Role:
+      type: string
+      enum: [ADMIN, PROCTOR, REVIEWER, CANDIDATE]
+    SessionStatus:
+      type: string
+      enum: [ACTIVE, ENDED, ABORTED]
+    EventType:
+      type: string
+      enum: [TAB_SWITCH, PASTE, FOCUS, BLUR]
+    IncidentType:
+      type: string
+      enum: [NO_FACE, MULTI_FACE, TAB_ABUSE, PASTE]
+    IncidentStatus:
+      type: string
+      enum: [OPEN, CONFIRMED, REJECTED]
+    ReviewStatus:
+      type: string
+      enum: [CONFIRMED, REJECTED]
+    User:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        username: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/Role' }
+    Exam:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        name: { type: string }
+        description: { type: string }
+        start_time: { type: string, format: date-time }
+        end_time: { type: string, format: date-time, nullable: true }
+        retention_days: { type: integer, minimum: 1 }
+    Session:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        user_id: { $ref: '#/components/schemas/UUID' }
+        exam_id: { $ref: '#/components/schemas/UUID' }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: string, format: date-time, nullable: true }
+        status: { $ref: '#/components/schemas/SessionStatus' }
+    MediaSnapshotIn:
+      type: object
+      required: [session_id, ts, object_key]
+      properties:
+        session_id: { $ref: '#/components/schemas/UUID' }
+        ts: { type: integer, format: int64, description: 'epoch ms' }
+        object_key: { type: string, description: 'storage path or key' }
+        mime_type: { type: string }
+        file_size: { type: integer, format: int64 }
+        idempotency_key: { type: string }
+        data_base64: { type: string, description: 'optional base64 JPG for MVP (alternatively use presigned upload)' }
+    MediaSnapshot:
+      allOf:
+        - $ref: '#/components/schemas/MediaSnapshotIn'
+        - type: object
+          properties:
+            id: { $ref: '#/components/schemas/UUID' }
+            uploaded_at: { type: string, format: date-time }
+            face_count: { type: integer, nullable: true }
+    EventIn:
+      type: object
+      required: [session_id, ts, event_type]
+      properties:
+        session_id: { $ref: '#/components/schemas/UUID' }
+        ts: { type: integer, format: int64 }
+        event_type: { $ref: '#/components/schemas/EventType' }
+        details: { type: object, additionalProperties: true }
+        idempotency_key: { type: string }
+    Event:
+      allOf:
+        - $ref: '#/components/schemas/EventIn'
+        - type: object
+          properties:
+            id: { $ref: '#/components/schemas/UUID' }
+            created_at: { type: string, format: date-time }
+    Incident:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        session_id: { $ref: '#/components/schemas/UUID' }
+        ts: { type: integer, format: int64 }
+        type: { $ref: '#/components/schemas/IncidentType' }
+        score: { type: number, format: float }
+        reason: { type: string }
+        evidence_url: { type: string }
+        status: { $ref: '#/components/schemas/IncidentStatus' }
+        created_at: { type: string, format: date-time }
+    ReviewIn:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: '#/components/schemas/ReviewStatus' }
+        note: { type: string }
+    Review:
+      allOf:
+        - $ref: '#/components/schemas/ReviewIn'
+        - type: object
+          properties:
+            id: { $ref: '#/components/schemas/UUID' }
+            incident_id: { $ref: '#/components/schemas/UUID' }
+            reviewer_id: { $ref: '#/components/schemas/UUID' }
+            reviewed_at: { type: string, format: date-time }
+    PagedResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { type: object }
+        total: { type: integer }
+        page: { type: integer }
+        size: { type: integer }
+
+paths:
+  /auth/login:
+    post:
+      summary: Dev login to obtain JWT (RS256 in production)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+
+  /sessions/start:
+    post:
+      summary: Start exam session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [exam_id]
+              properties:
+                exam_id: { $ref: '#/components/schemas/UUID' }
+      responses:
+        '200':
+          description: Session started
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+
+  /sessions/{id}/end:
+    post:
+      summary: End exam session
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { $ref: '#/components/schemas/UUID' }
+      responses:
+        '200': { description: Session ended }
+
+  /ingest/snapshots:
+    post:
+      summary: Ingest webcam snapshot metadata (and optional base64)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MediaSnapshotIn' }
+      responses:
+        '200':
+          description: Snapshot accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaSnapshot' }
+
+  /ingest/events:
+    post:
+      summary: Ingest telemetry event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EventIn' }
+      responses:
+        '200':
+          description: Event accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Event' }
+
+  /incidents:
+    get:
+      summary: List incidents with filters
+      parameters:
+        - in: query
+          name: examId
+          schema: { $ref: '#/components/schemas/UUID' }
+        - in: query
+          name: sessionId
+          schema: { $ref: '#/components/schemas/UUID' }
+        - in: query
+          name: status
+          schema: { $ref: '#/components/schemas/IncidentStatus' }
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Paged incidents
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PagedResult'
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/Incident' }
+
+  /incidents/{id}:
+    get:
+      summary: Incident detail
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { $ref: '#/components/schemas/UUID' }
+      responses:
+        '200':
+          description: Incident
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Incident' }
+
+  /incidents/{id}/review:
+    post:
+      summary: Create or update review (one per incident)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { $ref: '#/components/schemas/UUID' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewIn' }
+      responses:
+        '200':
+          description: Review saved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
+
+  /admin/stats:
+    get:
+      summary: Basic statistics per exam
+      parameters:
+        - in: query
+          name: examId
+          required: true
+          schema: { $ref: '#/components/schemas/UUID' }
+      responses:
+        '200':
+          description: Aggregated stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalIncidents: { type: integer }
+                  confirmedRate: { type: number, format: float }
+                  byType:
+                    type: object
+                    additionalProperties:
+                      type: integer

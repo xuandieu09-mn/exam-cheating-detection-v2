@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-ExamApplication<exam-backend>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.exam.ExamApplication",
+            "projectName": "exam-backend",
+            "args": "",
+            "vmArgs": "-Duser.timezone=UTC",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
