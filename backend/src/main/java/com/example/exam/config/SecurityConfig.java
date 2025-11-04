@@ -1,6 +1,9 @@
 package com.example.exam.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +24,9 @@ public class SecurityConfig {
 
     @Value("${security.require-auth:false}")
     private boolean requireAuth;
+
+    @Value("${cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
+    private String corsAllowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,6 +56,9 @@ public class SecurityConfig {
             auth.authorizeHttpRequests(registry -> registry.anyRequest().permitAll());
         }
 
+        // Enable CORS
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+
         return http.build();
     }
 
@@ -61,5 +70,24 @@ public class SecurityConfig {
                 .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration cfg = new CorsConfiguration();
+        // Split and trim allowed origins
+        List<String> origins = java.util.Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .toList();
+        cfg.setAllowedOrigins(origins);
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setExposedHeaders(List.of("Location", "Content-Type", "Authorization"));
+        cfg.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return source;
     }
 }

@@ -74,3 +74,20 @@ Ghi chú:
 - Postgres container đang publish cổng host 55432 → JDBC URL mặc định trong `application.yml` đã trỏ `jdbc:postgresql://127.0.0.1:55432/examdb`.
 - Nếu bạn đang có Postgres cài native trên Windows chiếm 5432, giữ nguyên cổng 55432 để tránh xung đột.
 - Có sẵn file `docs/api/requests.http` để test nhanh bằng VS Code REST Client.
+
+## Troubleshooting: TimeZone 'Asia/Saigon'
+
+- Nếu khi chạy test hoặc khởi động app bạn gặp lỗi tương tự:
+
+	`FATAL: invalid value for parameter "TimeZone": "Asia/Saigon"`
+
+	Nguyên nhân: JDBC driver gửi TimeZone mặc định của JVM (lấy từ OS). Postgres không chấp nhận alias cũ `Asia/Saigon`.
+
+	Đã khắc phục sẵn trong project theo 2 lớp:
+	- Test JVM luôn chạy với `-Duser.timezone=UTC` (cấu hình `maven-surefire-plugin`).
+	- Kết nối Hikari ép session Postgres dùng `TimeZone=UTC` và Hibernate dùng `hibernate.jdbc.time_zone=UTC` (trong `application.yml`).
+
+	Vì vậy bạn không cần đổi timezone của Windows. Nếu vẫn thấy lỗi, hãy đảm bảo:
+	- Đã rebuild dự án: `mvn -q -DskipTests package`
+	- Container Postgres đã up: `docker ps` thấy service đang chạy cổng 55432.
+	- Không override cấu hình bằng biến môi trường lạ liên quan timezone.

@@ -1,5 +1,5 @@
-com\example\exam\model\Session.class
-com\example\exam\model\SessionStatus.class
 com\example\exam\controller\SessionController.class
+com\example\exam\model\SessionStatus.class
 com\example\exam\ExamApplication.class
 com\example\exam\repository\SessionRepository.class
+com\example\exam\model\Session.class

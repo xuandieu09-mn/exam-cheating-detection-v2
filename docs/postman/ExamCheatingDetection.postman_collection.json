@@ -1,0 +1,178 @@
+{
+  "info": {
+    "_postman_id": "8b8b1f20-7c0f-4e2a-9f6e-ec8f28c9ec01",
+    "name": "Exam Cheating Detection API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Collection to test sessions, ingest, incidents, and reviews APIs. Uses seeded IDs (exam 1111..., user 2222...) in dev."
+  },
+  "item": [
+    {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "Start session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var data = pm.response.json();",
+                  "  pm.collectionVariables.set('sessionId', data.id);",
+                  "  console.log('sessionId set to', data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"examId\": \"{{examId}}\",\n  \"userId\": \"{{userId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/sessions/start" }
+          }
+        },
+        {
+          "name": "List sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/sessions" }
+          }
+        },
+        {
+          "name": "Get session by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/sessions/{{sessionId}}" }
+          }
+        },
+        {
+          "name": "End session",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/sessions/{{sessionId}}/end" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ingest",
+      "item": [
+        {
+          "name": "Ingest events",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"sessionId\": \"{{sessionId}}\",\n      \"ts\": {{$timestamp}},\n      \"eventType\": \"FOCUS\",\n      \"details\": \"{\\\"note\\\":\\\"focus event\\\"}\",\n      \"idempotencyKey\": \"evt-{{$timestamp}}\"\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/ingest/events" }
+          }
+        },
+        {
+          "name": "Ingest snapshots (metadata)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"sessionId\": \"{{sessionId}}\",\n      \"ts\": {{$timestamp}},\n      \"objectKey\": \"uploads/{{sessionId}}/{{$isoTimestamp}}/demo-{{$timestamp}}.jpg\",\n      \"fileSize\": 12345,\n      \"mimeType\": \"image/jpeg\",\n      \"faceCount\": 1,\n      \"idempotencyKey\": \"snap-{{$timestamp}}\"\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/ingest/snapshots" }
+          }
+        },
+        {
+          "name": "Upload snapshots (base64)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"sessionId\": \"{{sessionId}}\",\n      \"ts\": {{$timestamp}},\n      \"imageBase64\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMB/VI7nWwAAAAASUVORK5CYII=\",\n      \"faceCount\": 0,\n      \"idempotencyKey\": \"upload-{{$timestamp}}\"\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/ingest/snapshots/upload" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Incidents & Reviews",
+      "item": [
+        {
+          "name": "Create incident",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var data = pm.response.json();",
+                  "  pm.collectionVariables.set('incidentId', data.id);",
+                  "  console.log('incidentId set to', data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"ts\": {{$timestamp}},\n  \"type\": \"TAB_ABUSE\",\n  \"score\": 0.85,\n  \"reason\": \"Switched tab multiple times\",\n  \"evidenceUrl\": \"/app/uploads/{{sessionId}}/...\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/incidents" }
+          }
+        },
+        {
+          "name": "List incidents (by session)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/incidents?sessionId={{sessionId}}" }
+          }
+        },
+        {
+          "name": "Get incident by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/incidents/{{incidentId}}" }
+          }
+        },
+        {
+          "name": "Create review (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentId\": \"{{incidentId}}\",\n  \"reviewerId\": \"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\",\n  \"status\": \"CONFIRMED\",\n  \"note\": \"Looks valid\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admin/reviews" }
+          }
+        },
+        {
+          "name": "Get review by incident",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/reviews?incidentId={{incidentId}}" }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": []
+}
