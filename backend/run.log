@@ -1,0 +1,43 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v3.2.12)
+
+2025-11-04T08:37:30.403Z  INFO 16316 --- [           main] com.example.exam.ExamApplication         : Starting ExamApplication v0.0.1-SNAPSHOT using Java 21.0.9 with PID 16316 (E:\HK1 Nam 4\TotNghiep\exam-cheating-detection-v2\backend\target\exam-backend-0.0.1-SNAPSHOT.jar started by Dell in e:\HK1 Nam 4\TotNghiep\exam-cheating-detection-v2\backend)
+2025-11-04T08:37:30.403Z  INFO 16316 --- [           main] com.example.exam.ExamApplication         : No active profile set, falling back to 1 default profile: "default"
+2025-11-04T08:37:32.260Z  INFO 16316 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-11-04T08:37:32.344Z  INFO 16316 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 80 ms. Found 1 JPA repository interface.
+2025-11-04T08:37:33.460Z  INFO 16316 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-11-04T08:37:33.484Z  INFO 16316 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-11-04T08:37:33.484Z  INFO 16316 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
+2025-11-04T08:37:33.541Z  INFO 16316 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-11-04T08:37:33.542Z  INFO 16316 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3046 ms
+2025-11-04T08:37:33.773Z  INFO 16316 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-11-04T08:37:34.191Z  INFO 16316 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@45801322
+2025-11-04T08:37:34.193Z  INFO 16316 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-11-04T08:37:34.345Z  INFO 16316 --- [           main] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 9.22.3 by Redgate
+2025-11-04T08:37:34.345Z  INFO 16316 --- [           main] o.f.c.internal.license.VersionPrinter    : See release notes here: https://rd.gt/416ObMi
+2025-11-04T08:37:34.345Z  INFO 16316 --- [           main] o.f.c.internal.license.VersionPrinter    : 
+2025-11-04T08:37:34.397Z  INFO 16316 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://127.0.0.1:55432/examdb (PostgreSQL 15.14)
+2025-11-04T08:37:34.513Z  INFO 16316 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.061s)
+2025-11-04T08:37:34.554Z  INFO 16316 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 2
+2025-11-04T08:37:34.554Z  WARN 16316 --- [           main] o.f.core.internal.command.DbMigrate      : Schema "public" has a version (2) that is newer than the latest available migration (1) !
+2025-11-04T08:37:34.560Z  INFO 16316 --- [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2025-11-04T08:37:34.727Z  INFO 16316 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-11-04T08:37:34.849Z  INFO 16316 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.10.Final
+2025-11-04T08:37:34.913Z  INFO 16316 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-11-04T08:37:35.218Z  INFO 16316 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-11-04T08:37:35.270Z  WARN 16316 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-11-04T08:37:36.236Z  INFO 16316 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-11-04T08:37:36.239Z  INFO 16316 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-11-04T08:37:37.097Z  WARN 16316 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-11-04T08:37:37.863Z  INFO 16316 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@5390862e, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@4fccdd1d, org.springframework.security.web.context.SecurityContextHolderFilter@1df8e685, org.springframework.security.web.header.HeaderWriterFilter@7bc3c59f, org.springframework.security.web.authentication.logout.LogoutFilter@5bc44d78, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@ab3b54, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@2bf2523f, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@22c0c0bc, org.springframework.security.web.access.ExceptionTranslationFilter@738153d8, org.springframework.security.web.access.intercept.AuthorizationFilter@6c4e11d0]
+2025-11-04T08:37:38.587Z  INFO 16316 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2025-11-04T08:37:38.602Z  INFO 16316 --- [           main] com.example.exam.ExamApplication         : Started ExamApplication in 9.056 seconds (process running for 9.913)
+2025-11-04T08:37:41.642Z  INFO 16316 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-11-04T08:37:41.644Z  INFO 16316 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-11-04T08:37:41.650Z  INFO 16316 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

@@ -20,8 +20,10 @@ docker ps
 ```bat
 cd backend
 mvnw.cmd -v   # kiểm tra mvn wrapper hoặc dùng mvn nếu đã cài
-mvnw.cmd -DskipTests spring-boot:run -Dspring-boot.run.jvmArguments="-Duser.timezone=UTC"
+mvnw.cmd spring-boot:run
 ```
+
+Ghi chú: lệnh trên đã tự kích hoạt profile `dev` và timezone `UTC` qua cấu hình `spring-boot-maven-plugin` trong `pom.xml`.
 
 Nếu dùng IDE (IntelliJ/Eclipse/VS Code) thì import project Maven (`backend/pom.xml`) và run `ExamApplication`.
 
@@ -37,7 +39,37 @@ curl -X POST http://localhost:8080/api/sessions/{id}/end
 - Docker logs: `docker logs exam-postgres`
 - App logs: console from mvn spring-boot:run or IDE run window.
 
-Next: add authentication (JWT RS256), entity mapping cho các bảng khác, seed data runner, và tests.
+6) API Docs (OpenAPI/Swagger)
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
+- OpenAPI JSON: http://localhost:8080/v3/api-docs
+
+7) Bật JWT (RS256) – bắt đầu từng bước
+- Mặc định (profile `dev`) chưa bắt buộc auth để bạn phát triển nhanh: `security.require-auth=false` trong `application-dev.yml`.
+- Để bật yêu cầu JWT cho `/api/**`, đổi thành:
+
+```yaml
+# application-dev.yml
+security:
+	require-auth: true
+
+spring:
+	security:
+		oauth2:
+			resourceserver:
+				jwt:
+					public-key-location: classpath:keys/dev-public.pem
+```
+
+- Sau khi bật, gửi kèm header:
+
+```http
+Authorization: Bearer <JWT_đã_ký_RS256>
+```
+
+- File `docs/api/requests.http` đã có biến `@authBearer` để bạn dán token nhanh.
+- Lưu ý: phần key dev chỉ phục vụ local; khi tích hợp IdP thực (Keycloak, Auth0, Azure AD…), thay `public-key-location` bằng `jwk-set-uri` (VD: `https://<domain>/.well-known/jwks.json`).
+
+Next: add authentication (JWT RS256), entity mapping cho các bảng khác, seed data runner, và mở rộng test coverage.
 Ghi chú:
 - Postgres container đang publish cổng host 55432 → JDBC URL mặc định trong `application.yml` đã trỏ `jdbc:postgresql://127.0.0.1:55432/examdb`.
 - Nếu bạn đang có Postgres cài native trên Windows chiếm 5432, giữ nguyên cổng 55432 để tránh xung đột.

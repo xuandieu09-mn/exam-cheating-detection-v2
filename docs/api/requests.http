@@ -1,22 +1,52 @@
 ### VS Code REST Client sample requests
 # Requires: VS Code extension "REST Client" (humao.rest-client)
+#
+# How to get a dev JWT (Windows cmd):
+#   cd /d e:\HK1 Nam 4\TotNghiep\exam-cheating-detection-v2\backend
+#   mvn -q -Dexec.mainClass=com.example.exam.util.DevJwtGenerator -Dexec.args="dev-user USER" exec:java
+#   (For admin token:) mvn -q -Dexec.mainClass=com.example.exam.util.DevJwtGenerator -Dexec.args="dev-admin ADMIN" exec:java
+# Copy the printed "Authorization header: Bearer ..." value into @authBearer below.
+
 # Base URL
 @base = http://localhost:8080/api
+@openapi = http://localhost:8080/v3/api-docs
+@authBearer = Bearer YOUR_DEV_JWT_HERE
 
-### Start session
-POST {{base}}/sessions/start
-Content-Type: application/json
+# Seeded demo IDs (available when running with dev profile)
+@examId = 11111111-1111-1111-1111-111111111111
+@userId = 22222222-2222-2222-2222-222222222222
+@sessionId = 00000000-0000-0000-0000-000000000000  # will be overwritten by Start session response
 
-{
-  "examId": "11111111-1111-1111-1111-111111111111",
-  "userId": "22222222-2222-2222-2222-222222222222"
-}
+### OpenAPI JSON (should be 200 without auth)
+GET {{openapi}}
 
-### End session (replace {id} with real UUID)
-POST {{base}}/sessions/{id}/end
+### List sessions (no auth) - expect 401 when auth is enabled
+GET {{base}}/sessions
 
 ### List sessions
 GET {{base}}/sessions
+Authorization: {{authBearer}}
 
-### Get session by id
-GET {{base}}/sessions/{id}
+### Start session (uses seeded examId/userId)
+POST {{base}}/sessions/start
+Content-Type: application/json
+Authorization: {{authBearer}}
+
+{
+  "examId": "{{examId}}",
+  "userId": "{{userId}}"
+}
+
+> {% client.global.set("sessionId", response.body.id); %}
+
+### Get session by id (uses last created)
+GET {{base}}/sessions/{{sessionId}}
+Authorization: {{authBearer}}
+
+### End session (uses last created)
+POST {{base}}/sessions/{{sessionId}}/end
+Authorization: {{authBearer}}
+
+### Admin area example - requires ADMIN role
+GET {{base}}/admin/ping
+Authorization: {{authBearer}}

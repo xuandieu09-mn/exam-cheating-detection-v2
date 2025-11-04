@@ -3,3 +3,15 @@ spring:
     locations:
       - classpath:db/migration
       - classpath:db/dev
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: classpath:keys/dev-public.pem
+
+# Bật/tắt bắt buộc JWT cho API (dev để false để tiện phát triển). Khi true, cần cấu hình public key RS256.
+security:
+  require-auth: true
+
+# Khi chuyển sang true, thêm cấu hình public key (ví dụ):
+# (ĐÃ cấu hình ở trên: spring.security.oauth2.resourceserver.jwt.public-key-location)

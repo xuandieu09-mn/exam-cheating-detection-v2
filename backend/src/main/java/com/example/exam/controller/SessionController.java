@@ -1,14 +1,16 @@
 package com.example.exam.controller;
 
+import com.example.exam.dto.SessionResponse;
+import com.example.exam.dto.StartSessionRequest;
 import com.example.exam.model.Session;
 import com.example.exam.model.SessionStatus;
 import com.example.exam.repository.SessionRepository;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.lang.NonNull;
@@ -23,45 +25,58 @@ public class SessionController {
         this.sessionRepository = sessionRepository;
     }
 
-    // Start a session: body {"examId":"...","userId":"..."}
+    // Start a session
     @PostMapping("/start")
-    public ResponseEntity<Session> startSession(@RequestBody Map<String, String> body) {
-        UUID examId = UUID.fromString(body.get("examId"));
-        UUID userId = UUID.fromString(body.get("userId"));
-
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Start a session",
+        description = "Creates a new exam session for a given examId and userId"
+    )
+    public ResponseEntity<SessionResponse> startSession(@Valid @RequestBody StartSessionRequest req) {
         Session s = new Session();
-        s.setExamId(examId);
-        s.setUserId(userId);
+        s.setExamId(req.getExamId());
+        s.setUserId(req.getUserId());
         s.setStartedAt(Instant.now());
-    // Set status explicitly using enum mapping
-    s.setStatus(SessionStatus.ACTIVE);
-
+        s.setStatus(SessionStatus.ACTIVE);
         Session saved = sessionRepository.save(s);
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok(SessionResponse.from(saved));
     }
 
     // List sessions (simple pagination later)
     @GetMapping
-    public ResponseEntity<List<Session>> listSessions() {
-        return ResponseEntity.ok(sessionRepository.findAll());
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "List sessions",
+        description = "Returns all sessions (pagination to be added later)"
+    )
+    public ResponseEntity<List<SessionResponse>> listSessions() {
+        List<SessionResponse> data = sessionRepository.findAll().stream().map(SessionResponse::from).toList();
+        return ResponseEntity.ok(data);
     }
 
     // Get session by id
     @GetMapping("/{id}")
-    public ResponseEntity<Session> getSession(@PathVariable("id") @NonNull UUID id) {
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Get a session",
+        description = "Returns a session by its ID"
+    )
+    public ResponseEntity<SessionResponse> getSession(@PathVariable("id") @NonNull UUID id) {
         return sessionRepository.findById(id)
+                .map(SessionResponse::from)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{id}/end")
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "End a session",
+        description = "Marks the session as ENDED and sets endedAt"
+    )
     public ResponseEntity<?> endSession(@PathVariable("id") @NonNull UUID id) {
         Optional<Session> maybe = sessionRepository.findById(id);
         if (maybe.isEmpty()) return ResponseEntity.notFound().build();
         Session s = maybe.get();
     s.setEndedAt(Instant.now());
     s.setStatus(SessionStatus.ENDED);
-        sessionRepository.save(s);
-        return ResponseEntity.ok(s);
+        Session saved = sessionRepository.save(s);
+        return ResponseEntity.ok(SessionResponse.from(saved));
     }
 }
