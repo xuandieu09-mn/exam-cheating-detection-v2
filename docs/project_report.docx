@@ -1,0 +1,148 @@
+# Báo cáo chi tiết dự án: Exam Cheating Detection API
+
+---
+
+## 1. Giới thiệu tổng quan
+
+Dự án "Exam Cheating Detection API" là hệ thống phát hiện gian lận thi cử trực tuyến, phục vụ cho các kỳ thi online. Dự án này gồm nhiều thành phần, sử dụng các công nghệ hiện đại để đảm bảo tính bảo mật, hiệu quả và dễ mở rộng.
+
+---
+
+## 2. Công nghệ sử dụng
+
+- **Java 17+**: Ngôn ngữ lập trình chính cho backend.
+- **Spring Boot**: Framework phát triển REST API, bảo mật, quản lý cấu hình.
+- **Maven**: Quản lý phụ thuộc, build và đóng gói dự án.
+- **Docker & Docker Compose**: Đóng gói, triển khai các dịch vụ (backend, database).
+- **PostgreSQL**: Cơ sở dữ liệu quan hệ lưu trữ thông tin người dùng, phiên thi, sự kiện, ảnh, incident.
+- **Postman**: Test API, kiểm thử các luồng nghiệp vụ.
+
+---
+
+## 3. Cấu trúc thư mục & ý nghĩa từng file
+
+### Thư mục gốc
+- `README.md`: Tài liệu hướng dẫn tổng quan, cách chạy, giải thích các thành phần dự án.
+- `docker-compose.yml`: Định nghĩa các service (backend, database) để chạy đồng thời bằng Docker.
+
+### backend/
+- `Dockerfile`: Script để build image Docker cho backend.
+- `pom.xml`: File cấu hình Maven, khai báo dependencies, plugin build, thông tin project.
+- `README-backend.md`: Hướng dẫn chi tiết cho backend (nếu có).
+- `src/`: Source code backend.
+    - `main/java/com/`: Chứa code Java chính (controller, service, repository, entity, ...).
+    - `main/resources/`: File cấu hình Spring Boot (`application.yml`, `application-dev.yml`), khóa bảo mật, ...
+    - `test/java/`: Code test tự động cho backend.
+- `target/`: Thư mục build, chứa file `.jar` sau khi chạy lệnh build Maven. Không commit lên repo (đã gitignore).
+
+### docs/
+- `architecture.md`: Tài liệu kiến trúc hệ thống, luồng dữ liệu, bảo mật, giám sát.
+- `requirements.md`: Yêu cầu nghiệp vụ, phi chức năng, lộ trình phát triển.
+- `api/openapi.yaml`: Đặc tả API chuẩn OpenAPI 3.0.
+- `postman/`: Bộ sưu tập file test API bằng Postman.
+    - `ExamCheatingDetection.postman_collection.json`: Collection các request API mẫu.
+    - `Local.postman_environment.json`: Biến môi trường cho test local.
+    - `README-vi.md`: Hướng dẫn sử dụng Postman.
+
+### infra/
+- Chứa các file hạ tầng, cấu hình triển khai (nếu có).
+
+### sql/
+- `schema.sql`: Lược đồ tạo bảng, trigger, index cho PostgreSQL.
+- `seed.sql`: Script seed dữ liệu mẫu để test nhanh.
+
+---
+
+## 4. Luồng hoạt động chính của hệ thống
+
+1. **Người dùng bắt đầu phiên thi**: Gọi API `/sessions/start` để tạo session mới.
+2. **Client gửi sự kiện, ảnh, metadata**: Gửi lên API `/ingest/events`, `/ingest/snapshots`.
+3. **Hệ thống backend xử lý, phát hiện sự kiện bất thường**: Tạo incident qua API `/incidents`.
+4. **Admin review các incident**: Xác nhận hoặc từ chối qua API `/admin/reviews`.
+
+---
+
+## 5. Hướng dẫn chạy dự án
+
+### 5.1. Chạy bằng Docker Compose
+Yêu cầu: Đã cài Docker và Docker Compose.
+
+```cmd
+cd <thư mục dự án>
+docker-compose up --build
+```
+- Backend chạy ở port 8080.
+- Database PostgreSQL chạy ở port 55432 (db=examdb, user=postgres, pass=postgres).
+- Ảnh upload lưu vào volume `uploads` gắn vào `/app/uploads` trong container backend.
+
+### 5.2. Chạy backend bằng Maven (không dùng Docker)
+Yêu cầu: Đã cài Java 17+ và Maven.
+
+```cmd
+cd backend
+mvn spring-boot:run
+```
+- API docs (Swagger UI): http://localhost:8080/swagger-ui/index.html
+- Cấu hình database trong `backend/src/main/resources/application.yml`.
+- Đảm bảo database đã khởi động và đúng thông tin kết nối.
+
+### 5.3. Build file .jar
+Nếu cần file `.jar` để deploy hoặc chạy riêng:
+```cmd
+cd backend
+mvn clean package
+```
+File `.jar` sẽ nằm ở `backend/target/`. File này không có sẵn khi pull code về, cần tự build lại.
+
+### 5.4. Test API bằng Postman
+- Mở file `docs/postman/ExamCheatingDetection.postman_collection.json` bằng Postman.
+- Sử dụng môi trường `Local.postman_environment.json` để test với local.
+- Các API chính: Sessions, Ingest, Incidents, Reviews.
+
+---
+
+## 6. Giải thích về file build (.jar) và gitignore
+- File `.jar` là sản phẩm build từ source code, dùng để chạy backend.
+- Không commit file build lên repo để tránh lỗi dung lượng, repo nhẹ, đúng chuẩn chuyên nghiệp.
+- Khi pull code về, mỗi thành viên cần tự build lại file `.jar` bằng lệnh Maven như hướng dẫn trên.
+
+---
+
+## 7. Một số endpoint mẫu
+
+### Upload snapshot (base64)
+- POST `/api/ingest/snapshots/upload`
+- Body mẫu:
+```json
+{
+  "items": [
+    {
+      "sessionId": "1a2b3c4d-0000-0000-0000-abcdefabcdef",
+      "ts": 1730726400000,
+      "imageBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...",
+      "faceCount": 2,
+      "idempotencyKey": "snap-unique-key-123"
+    }
+  ]
+}
+```
+Server sẽ giải mã ảnh, lưu file vào `/app/uploads/<sessionId>/YYYY/MM/DD/<uuid>.jpg` và ghi metadata vào DB.
+
+---
+
+## 8. Lưu ý khi phát triển
+- Không commit file build (.jar, .class, ...) lên repo, chỉ commit source code.
+- Cấu hình các biến môi trường (database, port, ...) trong file `.env` hoặc `application.yml`.
+- Nếu gặp lỗi dung lượng file khi push, kiểm tra lại `.gitignore` và xóa file build khỏi repo.
+- Đọc kỹ tài liệu trong thư mục `docs/` để hiểu kiến trúc, luồng nghiệp vụ, API.
+
+---
+
+## 9. Tài liệu tham khảo
+- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
+- [Docker Compose](https://docs.docker.com/compose/)
+- [Postman](https://www.postman.com/)
+
+---
+
+Nếu có thắc mắc, liên hệ chủ repo hoặc xem thêm trong thư mục `docs/`.
