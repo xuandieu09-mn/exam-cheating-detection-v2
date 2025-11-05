@@ -1,1 +1,11 @@
-backend/target/
+# Ignore Maven build output for this module
+target/
+
+# IDE and OS files (safety)
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+*.log
+*.tmp
