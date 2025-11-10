@@ -4,42 +4,13 @@
 -- 0) Extensions
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- 1) Enum types (use DO blocks for broad PG compatibility: older PG may not support "CREATE TYPE IF NOT EXISTS")
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
-    CREATE TYPE user_role AS ENUM ('ADMIN', 'PROCTOR', 'REVIEWER', 'CANDIDATE');
-  END IF;
-END $$;
-
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'session_status') THEN
-    CREATE TYPE session_status AS ENUM ('ACTIVE', 'ENDED', 'ABORTED');
-  END IF;
-END $$;
-
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'event_type') THEN
-    CREATE TYPE event_type AS ENUM ('TAB_SWITCH', 'PASTE', 'FOCUS', 'BLUR');
-  END IF;
-END $$;
-
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'incident_type') THEN
-    CREATE TYPE incident_type AS ENUM ('NO_FACE', 'MULTI_FACE', 'TAB_ABUSE', 'PASTE');
-  END IF;
-END $$;
-
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'incident_status') THEN
-    CREATE TYPE incident_status AS ENUM ('OPEN', 'CONFIRMED', 'REJECTED');
-  END IF;
-END $$;
-
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'review_status') THEN
-    CREATE TYPE review_status AS ENUM ('CONFIRMED', 'REJECTED');
-  END IF;
-END $$;
+-- 1) Enum types
+CREATE TYPE IF NOT EXISTS user_role AS ENUM ('ADMIN', 'PROCTOR', 'REVIEWER', 'CANDIDATE');
+CREATE TYPE IF NOT EXISTS session_status AS ENUM ('ACTIVE', 'ENDED', 'ABORTED');
+CREATE TYPE IF NOT EXISTS event_type AS ENUM ('TAB_SWITCH', 'PASTE', 'FOCUS', 'BLUR');
+CREATE TYPE IF NOT EXISTS incident_type AS ENUM ('NO_FACE', 'MULTI_FACE', 'TAB_ABUSE', 'PASTE');
+CREATE TYPE IF NOT EXISTS incident_status AS ENUM ('OPEN', 'CONFIRMED', 'REJECTED');
+CREATE TYPE IF NOT EXISTS review_status AS ENUM ('CONFIRMED', 'REJECTED');
 
 -- 2) Tables
 CREATE TABLE IF NOT EXISTS users (

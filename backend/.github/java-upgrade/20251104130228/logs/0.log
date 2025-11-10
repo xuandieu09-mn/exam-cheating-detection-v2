@@ -1,0 +1,68 @@
+2025-11-04T13:02:28.103Z [INFO] ----------------------invoke generate_upgrade_plan_for_java_project----------------------
+2025-11-04T13:02:28.104Z [INFO] [Tool.invoke]({name: generate_upgrade_plan_for_java_project, input: {
+  "projectPath": "e:\\HK1 Nam 4\\TotNghiep\\exam-cheating-detection-v2\\backend",
+  "targetJavaVersion": "21"
+}}).
+2025-11-04T13:02:28.105Z [INFO] [Plan.tryStartTask]({tool:generate_upgrade_plan_for_java_project, nextTask:{type:undefined, tool:undefined}}
+2025-11-04T13:02:28.106Z [INFO] [Plan.tryStartTask]: no next task, create new one.
+2025-11-04T13:02:28.107Z [INFO] [Plan.createTaskAtStart]({tool: generate_upgrade_plan_for_java_project, input: {
+  "projectPath": "e:\\HK1 Nam 4\\TotNghiep\\exam-cheating-detection-v2\\backend",
+  "targetJavaVersion": "21",
+  "sessionId": "20251104130228"
+}}).
+2025-11-04T13:02:28.108Z [INFO] [Plan.tryStartTask]: starting task generatePlan
+2025-11-04T13:02:28.108Z [INFO] [Task.start](): Starting task generatePlan
+2025-11-04T13:02:28.110Z [INFO] [Task.start](1): Started task generatePlan
+2025-11-04T13:02:28.117Z [INFO] [Tool.invoke] validate GitHub Copilot license.
+2025-11-04T13:02:29.096Z [INFO] Copilot user info:{
+  "access_type_sku": "free_educational_quota",
+  "analytics_tracking_id": "49c4791c8a5988710d4ef3b334c27f06",
+  "assigned_date": "2025-06-03T12:11:53+07:00",
+  "can_signup_for_limited": false,
+  "chat_enabled": true,
+  "copilot_plan": "individual",
+  "organization_login_list": [],
+  "organization_list": [],
+  "quota_reset_date": "2025-12-01",
+  "quota_snapshots": {
+    "chat": {
+      "entitlement": 0,
+      "overage_count": 0,
+      "overage_permitted": false,
+      "percent_remaining": 100,
+      "quota_id": "chat",
+      "quota_remaining": 0,
+      "remaining": 0,
+      "unlimited": true,
+      "timestamp_utc": "2025-11-04T13:02:30.227Z"
+    },
+    "completions": {
+      "entitlement": 0,
+      "overage_count": 0,
+      "overage_permitted": false,
+      "percent_remaining": 100,
+      "quota_id": "completions",
+      "quota_remaining": 0,
+      "remaining": 0,
+      "unlimited": true,
+      "timestamp_utc": "2025-11-04T13:02:30.227Z"
+    },
+    "premium_interactions": {
+      "entitlement": 300,
+      "overage_count": 0,
+      "overage_permitted": false,
+      "percent_remaining": 66,
+      "quota_id": "premium_interactions",
+      "quota_remaining": 198,
+      "remaining": 198,
+      "unlimited": false,
+      "timestamp_utc": "2025-11-04T13:02:30.227Z"
+    }
+  },
+  "quota_reset_date_utc": "2025-12-01T00:00:00.000Z"
+}
+2025-11-04T13:02:29.099Z [WARN] "GitHub Copilot app modernization - upgrade for Java" and its tools are only available for GitHub Copilot "Pro", "Pro+", "Business" and "Enterprise" plans.
+2025-11-04T13:02:29.100Z [ERROR] [Tool.invoke] error occurs when invoking tool generate_upgrade_plan_for_java_project: UnsupportedCopilotPlanError: "GitHub Copilot app modernization - upgrade for Java" and its tools are only available for GitHub Copilot "Pro", "Pro+", "Business" and "Enterprise" plans.. Please upgrade your GitHub Copilot plan to use this feature or upgrading this project using other tools you prefer..
+2025-11-04T13:02:29.103Z [INFO] [Task.complete](1): Completing task generatePlan
+2025-11-04T13:02:29.106Z [INFO] ----------------------invoked generate_upgrade_plan_for_java_project----------------------
+2025-11-04T13:02:29.109Z [INFO] [Task.complete](1): Completed task generatePlan

@@ -1,0 +1,59 @@
+2025-11-05T02:30:20.199Z [INFO] ----------------------invoke run_tests_for_java----------------------
+2025-11-05T02:30:20.200Z [INFO] [Tool.invoke]({name: run_tests_for_java, input: {
+  "projectPath": "e:\\HK1 Nam 4\\TotNghiep\\exam-cheating-detection-v2\\backend"
+}}).
+2025-11-05T02:30:20.201Z [INFO] [Task.start](): Starting task toolCall
+2025-11-05T02:30:20.203Z [INFO] [Task.start](): Started task toolCall
+2025-11-05T02:30:20.203Z [INFO] [Tool.invoke] validate GitHub Copilot license.
+2025-11-05T02:30:20.782Z [INFO] Copilot user info:{
+  "access_type_sku": "free_educational_quota",
+  "analytics_tracking_id": "49c4791c8a5988710d4ef3b334c27f06",
+  "assigned_date": "2025-06-03T12:11:53+07:00",
+  "can_signup_for_limited": false,
+  "chat_enabled": true,
+  "copilot_plan": "individual",
+  "organization_login_list": [],
+  "organization_list": [],
+  "quota_reset_date": "2025-12-01",
+  "quota_snapshots": {
+    "chat": {
+      "entitlement": 0,
+      "overage_count": 0,
+      "overage_permitted": false,
+      "percent_remaining": 100,
+      "quota_id": "chat",
+      "quota_remaining": 0,
+      "remaining": 0,
+      "unlimited": true,
+      "timestamp_utc": "2025-11-05T02:30:21.510Z"
+    },
+    "completions": {
+      "entitlement": 0,
+      "overage_count": 0,
+      "overage_permitted": false,
+      "percent_remaining": 100,
+      "quota_id": "completions",
+      "quota_remaining": 0,
+      "remaining": 0,
+      "unlimited": true,
+      "timestamp_utc": "2025-11-05T02:30:21.510Z"
+    },
+    "premium_interactions": {
+      "entitlement": 300,
+      "overage_count": 0,
+      "overage_permitted": false,
+      "percent_remaining": 63,
+      "quota_id": "premium_interactions",
+      "quota_remaining": 189,
+      "remaining": 189,
+      "unlimited": false,
+      "timestamp_utc": "2025-11-05T02:30:21.510Z"
+    }
+  },
+  "quota_reset_date_utc": "2025-12-01T00:00:00.000Z"
+}
+2025-11-05T02:30:20.785Z [WARN] "GitHub Copilot app modernization - upgrade for Java" and its tools are only available for GitHub Copilot "Pro", "Pro+", "Business" and "Enterprise" plans.
+2025-11-05T02:30:20.786Z [ERROR] [Tool.invoke] error occurs when invoking tool run_tests_for_java: UnsupportedCopilotPlanError: "GitHub Copilot app modernization - upgrade for Java" and its tools are only available for GitHub Copilot "Pro", "Pro+", "Business" and "Enterprise" plans.. Please upgrade your GitHub Copilot plan to use this feature or upgrading this project using other tools you prefer..
+2025-11-05T02:30:20.787Z [INFO] [Task.complete](): Completing task toolCall
+2025-11-05T02:30:20.788Z [INFO] ----------------------invoked run_tests_for_java----------------------
+2025-11-05T02:30:20.796Z [INFO] [Task.complete](): Completed task toolCall
