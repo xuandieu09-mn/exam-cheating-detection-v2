@@ -14,4 +14,5 @@ public interface IncidentRepository extends JpaRepository<Incident, UUID> {
     List<Incident> findBySessionIdOrderByTsAsc(UUID sessionId);
     List<Incident> findByTypeAndStatus(IncidentType type, IncidentStatus status);
     Page<Incident> findBySessionId(UUID sessionId, Pageable pageable);
+    long countByStatus(IncidentStatus status);
 }
