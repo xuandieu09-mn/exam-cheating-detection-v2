@@ -7,8 +7,12 @@ import com.example.exam.model.MediaSnapshot;
 import com.example.exam.repository.EventRepository;
 import com.example.exam.repository.MediaSnapshotRepository;
 import com.example.exam.repository.SessionRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -20,6 +24,8 @@ public class IngestService {
     private final SessionRepository sessionRepository;
     private final EventRepository eventRepository;
     private final MediaSnapshotRepository snapshotRepository;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(IngestService.class);
 
     public IngestService(SessionRepository sessionRepository,
                          EventRepository eventRepository,
@@ -43,11 +49,29 @@ public class IngestService {
                 continue;
             }
 
+            // Check dedupe by idempotency key first
             var existing = eventRepository.findByIdempotencyKey(item.idempotencyKey);
             if (existing.isPresent()) {
                 dup++;
                 ids.add(existing.get().getId());
                 continue;
+            }
+
+            // Also check composite unique key (sessionId, ts, eventType)
+            var existingComposite = eventRepository.findBySessionIdAndTsAndEventType(sessionId, item.ts, item.eventType);
+            if (existingComposite.isPresent()) {
+                dup++;
+                ids.add(existingComposite.get().getId());
+                continue;
+            }
+
+            // Validate JSON in details if provided (avoid DB jsonb parse errors)
+            if (item.details != null) {
+                try {
+                    mapper.readTree(item.details);
+                } catch (Exception ex) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid JSON in 'details'");
+                }
             }
 
             Event e = new Event();
@@ -58,9 +82,27 @@ public class IngestService {
             e.setIdempotencyKey(item.idempotencyKey);
             e.setCreatedAt(Instant.now());
 
-            e = eventRepository.save(e);
-            created++;
-            ids.add(e.getId());
+            try {
+                e = eventRepository.save(e);
+                created++;
+                ids.add(e.getId());
+            } catch (DataIntegrityViolationException ex) {
+                // Safety net: treat DB unique violations as duplicates instead of 500
+                var maybe = eventRepository.findBySessionIdAndTsAndEventType(sessionId, item.ts, item.eventType)
+                        .or(() -> eventRepository.findByIdempotencyKey(item.idempotencyKey));
+                if (maybe.isPresent()) {
+                    dup++;
+                    ids.add(maybe.get().getId());
+                    log.debug("Ingest duplicate detected via integrity violation: {}", item.idempotencyKey);
+                } else {
+                    log.error("Unexpected data integrity error ingesting event: sessionId={}, ts={}, type={}, key={}",
+                            sessionId, item.ts, item.eventType, item.idempotencyKey, ex);
+                    throw ex; // unknown integrity issue: propagate
+                }
+            } catch (Exception ex) {
+                log.error("Unhandled exception saving event: sessionId={}, ts={}, type={}, key={} -> {}", sessionId, item.ts, item.eventType, item.idempotencyKey, ex.getMessage(), ex);
+                throw ex; // Let global handler turn into 500; log gives diagnostics
+            }
         }
 
         return new EventIngestDto.Result(created, dup, ids);

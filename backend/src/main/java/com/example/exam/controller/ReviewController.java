@@ -3,6 +3,7 @@ package com.example.exam.controller;
 import com.example.exam.dto.ReviewDto;
 import com.example.exam.model.Review;
 import com.example.exam.repository.IncidentRepository;
+import com.example.exam.repository.UserRepository;
 import com.example.exam.repository.ReviewRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,10 +22,12 @@ public class ReviewController {
 
     private final ReviewRepository reviewRepository;
     private final IncidentRepository incidentRepository;
+    private final UserRepository userRepository;
 
-    public ReviewController(ReviewRepository reviewRepository, IncidentRepository incidentRepository) {
+    public ReviewController(ReviewRepository reviewRepository, IncidentRepository incidentRepository, UserRepository userRepository) {
         this.reviewRepository = reviewRepository;
         this.incidentRepository = incidentRepository;
+        this.userRepository = userRepository;
     }
 
     @PostMapping
@@ -38,6 +41,18 @@ public class ReviewController {
         // Enforce one review per incident
         if (reviewRepository.findByIncidentId(incidentId).isPresent()) {
             return ResponseEntity.status(409).build();
+        }
+
+        // Optional reviewerId: if provided, validate existence to avoid FK violation
+        if (req.reviewerId != null && !userRepository.existsById(req.reviewerId)) {
+            return ResponseEntity.badRequest().body(
+                java.util.Map.of(
+                    "type", "https://example.com/problems/data-integrity",
+                    "title", "Reviewer not found",
+                    "status", 400,
+                    "detail", "User with reviewerId does not exist"
+                )
+            );
         }
         Review r = new Review();
         r.setIncidentId(incidentId);
