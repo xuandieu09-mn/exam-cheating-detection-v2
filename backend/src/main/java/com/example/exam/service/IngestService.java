@@ -93,7 +93,7 @@ public class IngestService {
                 
                 // Evaluate rules after saving event
                 if (item.eventType == EventType.TAB_SWITCH) {
-                    ruleService.evaluateTabSwitch(sessionId, Instant.ofEpochSecond(item.ts));
+                    ruleService.evaluateTabSwitch(sessionId, Instant.ofEpochMilli(item.ts));
                 }
             } catch (DataIntegrityViolationException ex) {
                 // Safety net: treat DB unique violations as duplicates instead of 500
