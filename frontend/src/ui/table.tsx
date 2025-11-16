@@ -23,11 +23,15 @@ export const TableBody: React.FC<{ children: React.ReactNode }> = ({ children })
   </tbody>
 );
 
-export const TableRow: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
-  children, 
-  className = '' 
-}) => (
-  <tr className={`hover:bg-gray-50 transition-colors ${className}`}>
+export const TableRow: React.FC<{ 
+  children: React.ReactNode; 
+  className?: string;
+  onClick?: () => void;
+}> = ({ children, className = '', onClick }) => (
+  <tr 
+    className={`hover:bg-gray-50 transition-colors ${onClick ? 'cursor-pointer' : ''} ${className}`}
+    onClick={onClick}
+  >
     {children}
   </tr>
 );
@@ -44,8 +48,9 @@ export const TableHead: React.FC<{ children: React.ReactNode; className?: string
 export const TableCell: React.FC<{ 
   children: React.ReactNode; 
   className?: string;
-}> = ({ children, className = '' }) => (
-  <td className={`p-4 align-middle ${className}`}>
+  title?: string;
+}> = ({ children, className = '', title }) => (
+  <td className={`p-4 align-middle ${className}`} title={title}>
     {children}
   </td>
 );
