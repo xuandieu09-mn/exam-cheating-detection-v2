@@ -1,6 +1,6 @@
 # 🎯 HỆ THỐNG EXAM CHEATING DETECTION - TRẠNG THÁI HIỆN TẠI
 
-**Cập nhật:** 16/11/2025 20:15 (UTC+7)
+**Cập nhật:** 16/11/2025 20:35 (UTC+7)
 
 ---
 
@@ -151,17 +151,22 @@ exam-cheating-detection-v2/
 - [x] API bổ sung (Exams, Sessions)
 - [x] Seed data
 
-### ✅ TUẦN 2: Redis + Rule Engine (COMPLETED)
-- [x] Redis setup
-- [x] Tab-abuse rule
-- [x] Mock exam APIs
-- [x] **BUGFIX:** Timestamp conversion ✅
+### ✅ TUẦN 2: Redis + Rule Engine + Mock Exam (COMPLETED)
+- [x] **Backend:** Redis setup
+- [x] **Backend:** Tab-abuse rule
+- [x] **Backend:** Mock exam APIs
+- [x] **Backend BUGFIX:** Timestamp conversion ✅
+- [x] **Frontend:** Mock exam page layout
+- [x] **Frontend:** Camera integration
+- [x] **Frontend:** Event detection (tab/paste/focus)
+- [x] **Frontend:** Timer + submit logic
 
-### 🔄 TUẦN 2: Frontend (IN PROGRESS - NEXT STEP)
-- [ ] Mock exam page layout
-- [ ] Camera integration
-- [ ] Event detection (tab/paste/focus)
-- [ ] Timer + submit logic
+### 🔄 TUẦN 3: RabbitMQ + Worker (NEXT)
+- [ ] RabbitMQ setup
+- [ ] Worker consumer
+- [ ] Face detection stub
+- [ ] NO_FACE / MULTI_FACE incidents
+- [ ] Frontend Candidate pages (Exams list, Results, Violations)
 
 ---
 
