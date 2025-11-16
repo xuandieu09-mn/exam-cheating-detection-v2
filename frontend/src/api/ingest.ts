@@ -53,11 +53,8 @@ export const ingestApi = {
     formData.append('sessionId', sessionId);
     formData.append('ts', Date.now().toString()); // milliseconds
 
-    await axios.post(`${API_BASE_URL}/ingest/snapshots/upload`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+    // Don't set Content-Type manually - let browser set it with boundary
+    await axios.post(`${API_BASE_URL}/ingest/snapshots/upload`, formData);
   }
 };
 
