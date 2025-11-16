@@ -13,6 +13,14 @@ import IngestDemoPage from './IngestDemoPage';
 import IncidentsPage from './IncidentsPage';
 import ReviewPage from './ReviewPage';
 
+// Week 2: Mock Exam
+import { MockExamPage } from './MockExamPage';
+
+// Candidate pages
+import { ExamsPage } from './roles/ExamsPage';
+import { MyResultsPage } from './roles/MyResultsPage';
+import { MyViolationsPage } from './roles/MyViolationsPage';
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -75,16 +83,39 @@ const App: React.FC = () => {
           }
         />
 
-        {/* Placeholder routes for menu items */}
+        {/* Candidate routes */}
         <Route
           path="/exams"
           element={
             <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <DashboardLayout>
-                <div style={{ padding: 24, background: 'white', borderRadius: 8 }}>
-                  <h2>Danh sách kỳ thi</h2>
-                  <p>Trang này sẽ được phát triển ở tuần 2</p>
-                </div>
+                <ExamsPage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mock-exam/:examId"
+          element={
+            <MockExamPage />
+          }
+        />
+        <Route
+          path="/my-results"
+          element={
+            <ProtectedRoute allowedRoles={['CANDIDATE']}>
+              <DashboardLayout>
+                <MyResultsPage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-violations"
+          element={
+            <ProtectedRoute allowedRoles={['CANDIDATE']}>
+              <DashboardLayout>
+                <MyViolationsPage />
               </DashboardLayout>
             </ProtectedRoute>
           }

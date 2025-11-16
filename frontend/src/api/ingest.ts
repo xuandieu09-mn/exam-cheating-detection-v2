@@ -51,7 +51,7 @@ export const ingestApi = {
     const filename = `snapshot-${Date.now()}.jpg`;
     formData.append('file', blob, filename);
     formData.append('sessionId', sessionId);
-    formData.append('ts', Math.floor(Date.now() / 1000).toString());
+    formData.append('ts', Date.now().toString()); // milliseconds
 
     await axios.post(`${API_BASE_URL}/ingest/snapshots/upload`, formData, {
       headers: {

@@ -87,7 +87,7 @@ export const MockExamPage = () => {
   const handleEvent = async (eventType: EventType) => {
     if (!sessionId) return;
 
-    const now = Math.floor(Date.now() / 1000);
+    const now = Date.now(); // milliseconds
     
     try {
       await ingestApi.ingestEvents({
