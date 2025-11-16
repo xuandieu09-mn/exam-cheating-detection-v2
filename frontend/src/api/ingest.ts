@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 export interface EventItem {
   sessionId: string;
   ts: number;
-  eventType: 'TAB_SWITCH' | 'PASTE_DETECTED' | 'FOCUS_LOST' | 'FOCUS_GAINED';
+  eventType: 'TAB_SWITCH' | 'PASTE' | 'FOCUS' | 'BLUR';
   details?: string;
   idempotencyKey: string;
 }

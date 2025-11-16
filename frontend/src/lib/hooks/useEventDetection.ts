@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export type EventType = 'TAB_SWITCH' | 'PASTE_DETECTED' | 'FOCUS_LOST' | 'FOCUS_GAINED';
+export type EventType = 'TAB_SWITCH' | 'PASTE' | 'FOCUS' | 'BLUR';
 
 export interface UseEventDetectionOptions {
   sessionId: string | null;
@@ -23,11 +23,11 @@ export const useEventDetection = (options: UseEventDetectionOptions) => {
 
     // Focus lost/gained
     const handleBlur = () => {
-      onEvent('FOCUS_LOST');
+      onEvent('BLUR');
     };
 
     const handleFocus = () => {
-      onEvent('FOCUS_GAINED');
+      onEvent('FOCUS');
     };
 
     // Paste detection
@@ -35,7 +35,7 @@ export const useEventDetection = (options: UseEventDetectionOptions) => {
       // Only detect paste in text inputs/textareas
       const target = e.target as HTMLElement;
       if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
-        onEvent('PASTE_DETECTED');
+        onEvent('PASTE');
       }
     };
 
