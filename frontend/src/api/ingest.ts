@@ -53,8 +53,16 @@ export const ingestApi = {
     formData.append('sessionId', sessionId);
     formData.append('ts', Date.now().toString()); // milliseconds
 
-    // Don't set Content-Type manually - let browser set it with boundary
-    await axios.post(`${API_BASE_URL}/ingest/snapshots/upload`, formData);
+    // Use fetch instead of axios to avoid interceptors messing with Content-Type
+    const response = await fetch(`${API_BASE_URL}/ingest/snapshots/upload`, {
+      method: 'POST',
+      body: formData
+      // No headers - let browser set Content-Type with boundary automatically
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+    }
   }
 };
 
