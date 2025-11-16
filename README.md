@@ -1,15 +1,56 @@
 
-# Exam Cheating Detection API
+# Exam Cheating Detection System
+
+## 🎉 NEW: Complete Frontend Implementation Available!
+
+**A comprehensive online exam detection system with real-time monitoring, incident review, and admin management.**
+
+### Quick Links
+- 📖 [Implementation Guide](IMPLEMENTATION.md) - Complete technical documentation
+- 🚀 [Deployment Guide](DEPLOYMENT.md) - Production deployment instructions
+- 📊 [Architecture Diagrams](ARCHITECTURE.md) - Visual system architecture
+- 📝 [Summary](SUMMARY.md) - Implementation overview and statistics
+
+### Features
+- ✅ **Real-time Monitoring**: Webcam capture (5s intervals) + telemetry tracking
+- ✅ **Role-based Access**: Student, Proctor, Reviewer, Admin interfaces
+- ✅ **Incident Workflow**: Detection → Review → Confirm/Dismiss
+- ✅ **Type-safe**: 100% TypeScript with full API integration
+- ✅ **Production Ready**: Builds successfully, fully documented
+
+### Quick Start
+
+**Using Docker Compose (Recommended):**
+```bash
+docker-compose up --build
+# Frontend: http://localhost:5173
+# Backend: http://localhost:8080
+# Login with any username (use 'admin', 'proctor', or 'student')
+```
+
+**Manual Start:**
+```bash
+# Frontend
+cd frontend && npm install && npm run dev
+
+# Backend  
+cd backend && mvn spring-boot:run
+```
+
+---
 
 ## Tổng quan dự án
 
 Dự án này là hệ thống phát hiện gian lận thi cử, gồm các thành phần chính:
+- **frontend/**: Giao diện người dùng React + TypeScript với monitoring và review.
 - **backend/**: Dịch vụ API chính, viết bằng Java Spring Boot.
 - **infra/**, **sql/**: File hạ tầng, cơ sở dữ liệu (schema, seed).
 - **docs/**: Tài liệu kiến trúc, API, hướng dẫn sử dụng Postman.
 - **docker-compose.yml**: Quản lý các dịch vụ bằng Docker.
 
 ### Công nghệ sử dụng
+- **React 18**, **TypeScript 5**: Frontend với real-time monitoring.
+- **Vite**: Build tool nhanh cho frontend.
 - **Java 17+**, **Spring Boot**: Xây dựng API backend.
 - **Maven**: Quản lý phụ thuộc và build dự án.
 - **Docker**: Đóng gói và chạy các dịch vụ.
@@ -17,6 +58,7 @@ Dự án này là hệ thống phát hiện gian lận thi cử, gồm các thà
 - **Postman**: Test API qua collection mẫu.
 
 ## Cấu trúc thư mục
+- `frontend/`: Frontend React application với monitoring components.
 - `backend/`: Source code backend, Dockerfile, file cấu hình Spring Boot.
 - `docs/`: Tài liệu, file Postman collection, OpenAPI spec.
 - `infra/`, `sql/`: File hạ tầng, script tạo và seed database.
