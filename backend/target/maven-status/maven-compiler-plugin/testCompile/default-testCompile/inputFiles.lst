@@ -1,8 +1,0 @@
-/home/runner/work/exam-cheating-detection-v2/exam-cheating-detection-v2/backend/src/test/java/com/example/exam/controller/IncidentControllerTest.java
-/home/runner/work/exam-cheating-detection-v2/exam-cheating-detection-v2/backend/src/test/java/com/example/exam/security/IngestSecurityTest.java
-/home/runner/work/exam-cheating-detection-v2/exam-cheating-detection-v2/backend/src/test/java/com/example/exam/controller/IngestControllerTest.java
-/home/runner/work/exam-cheating-detection-v2/exam-cheating-detection-v2/backend/src/test/java/com/example/exam/controller/ReviewControllerTest.java
-/home/runner/work/exam-cheating-detection-v2/exam-cheating-detection-v2/backend/src/test/java/com/example/exam/controller/SessionControllerTest.java
-/home/runner/work/exam-cheating-detection-v2/exam-cheating-detection-v2/backend/src/test/java/com/example/exam/service/IngestServiceTest.java
-/home/runner/work/exam-cheating-detection-v2/exam-cheating-detection-v2/backend/src/test/java/com/example/exam/security/AdminSecurityTest.java
-/home/runner/work/exam-cheating-detection-v2/exam-cheating-detection-v2/backend/src/test/java/com/example/exam/security/ReviewSecurityTest.java
