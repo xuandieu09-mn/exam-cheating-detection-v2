@@ -42,7 +42,7 @@ public class IngestController {
     @Operation(summary = "Upload snapshot file via multipart (real-time exam)")
     public ResponseEntity<SnapshotUploadDto.Result> uploadSnapshotFile(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("sessionId") String sessionId,
+            @RequestParam("sessionId") UUID sessionId,
             @RequestParam("ts") Long ts
     ) throws IOException {
         // Generate idempotency key
@@ -52,16 +52,17 @@ public class IngestController {
         String objectKey = mediaStorageService.storeFile(file);
         
         // Prepare ingest request
-        var item = new SnapshotIngestDto.Item(
-            sessionId, 
-            ts, 
-            objectKey, 
-            file.getSize(), 
-            file.getContentType(), 
-            null, // faceCount will be set by worker later
-            idempotencyKey
-        );
-        var ingestReq = new SnapshotIngestDto.Request(java.util.List.of(item));
+        var item = new SnapshotIngestDto.Item();
+        item.sessionId = sessionId;
+        item.ts = ts;
+        item.objectKey = objectKey;
+        item.fileSize = file.getSize();
+        item.mimeType = file.getContentType();
+        item.faceCount = null; // will be set by worker later
+        item.idempotencyKey = idempotencyKey;
+        
+        var ingestReq = new SnapshotIngestDto.Request();
+        ingestReq.items = java.util.List.of(item);
         
         // Ingest to database
         var ingestResult = ingestService.ingestSnapshots(ingestReq);
