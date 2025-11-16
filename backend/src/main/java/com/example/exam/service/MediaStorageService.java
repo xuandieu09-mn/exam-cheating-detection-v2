@@ -4,6 +4,7 @@ import com.example.exam.dto.SnapshotIngestDto;
 import com.example.exam.dto.SnapshotUploadDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +23,33 @@ public class MediaStorageService {
 
     public MediaStorageService(@Value("${media.upload-dir:/app/uploads}") String uploadDir) {
         this.uploadRoot = Path.of(uploadDir);
+    }
+
+    /**
+     * Store MultipartFile and return objectKey
+     */
+    public String storeFile(MultipartFile file) throws IOException {
+        // Get timestamp from current time
+        var zdt = ZonedDateTime.now(ZoneId.of("UTC"));
+        
+        // Detect extension
+        String originalFilename = file.getOriginalFilename();
+        String ext = ".jpg"; // default
+        if (originalFilename != null && originalFilename.contains(".")) {
+            ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        
+        // Build object key: uploads/YYYY/MM/DD/uuid.ext
+        String objectKey = String.format("%04d/%02d/%02d/", 
+            zdt.getYear(), zdt.getMonthValue(), zdt.getDayOfMonth()) +
+            UUID.randomUUID() + ext;
+        
+        // Write file
+        Path target = uploadRoot.resolve(objectKey).normalize();
+        Files.createDirectories(target.getParent());
+        file.transferTo(target);
+        
+        return objectKey;
     }
 
     public SnapshotIngestDto.Request prepareIngestRequest(SnapshotUploadDto.Request uploadRequest) {

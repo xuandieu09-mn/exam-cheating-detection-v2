@@ -8,10 +8,10 @@ import com.example.exam.service.MediaStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/ingest")
@@ -38,9 +38,44 @@ public class IngestController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/snapshots/upload")
-    @Operation(summary = "Upload snapshots as base64 and ingest (writes to disk, idempotent)")
-    public ResponseEntity<SnapshotUploadDto.Result> uploadSnapshots(@Valid @RequestBody SnapshotUploadDto.Request request) {
+    @PostMapping(value = "/snapshots/upload", consumes = "multipart/form-data")
+    @Operation(summary = "Upload snapshot file via multipart (real-time exam)")
+    public ResponseEntity<SnapshotUploadDto.Result> uploadSnapshotFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("sessionId") String sessionId,
+            @RequestParam("ts") Long ts
+    ) throws IOException {
+        // Generate idempotency key
+        String idempotencyKey = sessionId + "-snapshot-" + ts;
+        
+        // Store file to disk
+        String objectKey = mediaStorageService.storeFile(file);
+        
+        // Prepare ingest request
+        var item = new SnapshotIngestDto.Item(
+            sessionId, 
+            ts, 
+            objectKey, 
+            file.getSize(), 
+            file.getContentType(), 
+            null, // faceCount will be set by worker later
+            idempotencyKey
+        );
+        var ingestReq = new SnapshotIngestDto.Request(java.util.List.of(item));
+        
+        // Ingest to database
+        var ingestResult = ingestService.ingestSnapshots(ingestReq);
+        
+        return ResponseEntity.ok(new SnapshotUploadDto.Result(
+            ingestResult.created, 
+            ingestResult.duplicates, 
+            ingestResult.ids
+        ));
+    }
+
+    @PostMapping("/snapshots/upload-base64")
+    @Operation(summary = "Upload snapshots as base64 and ingest (legacy, writes to disk, idempotent)")
+    public ResponseEntity<SnapshotUploadDto.Result> uploadSnapshotsBase64(@Valid @RequestBody SnapshotUploadDto.Request request) {
         // Store images to disk and transform to SnapshotIngestDto to reuse existing path
         var ingestReq = mediaStorageService.prepareIngestRequest(request);
         var ingestResult = ingestService.ingestSnapshots(ingestReq);
