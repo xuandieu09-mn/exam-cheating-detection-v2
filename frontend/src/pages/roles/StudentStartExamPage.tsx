@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../auth/AuthContext';
 import { useAppState } from '../../state/AppStateContext';
+import { useExamTelemetry } from '../../state/useExamTelemetry';
 import { toastBus } from '../../ui/toastBus';
 import { LoadingSpinner } from '../../ui/LoadingSpinner';
 import { WebcamCapture } from '../../components/WebcamCapture';
@@ -13,6 +14,12 @@ const StudentStartExamPage: React.FC = () => {
   const [selectedExamId, setSelectedExamId] = useState('');
   const [loading, setLoading] = useState(false);
   const [isExamActive, setIsExamActive] = useState(false);
+
+  // Enable telemetry when exam is active
+  useExamTelemetry({ 
+    sessionId: currentSession?.id || '', 
+    enabled: isExamActive && !!currentSession 
+  });
 
   useEffect(() => {
     // Load available exams (in production, fetch from backend)
