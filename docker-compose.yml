@@ -17,6 +17,20 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    container_name: exam-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
   backend:
     build:
       context: ./backend
@@ -25,6 +39,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/examdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
       SPRING_PROFILES_ACTIVE: dev
       TZ: UTC
       MEDIA_UPLOAD_DIR: /app/uploads
@@ -34,9 +50,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - uploads:/app/uploads
 
 volumes:
   pgdata:
+  redis-data:
   uploads:

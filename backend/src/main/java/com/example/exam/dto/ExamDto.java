@@ -1,0 +1,75 @@
+package com.example.exam.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.Instant;
+import java.util.UUID;
+
+public class ExamDto {
+
+    public static class Response {
+        public UUID id;
+        public String name;
+        public String description;
+        public Instant startTime;
+        public Instant endTime;
+        public Integer retentionDays;
+        public UUID createdBy;
+        public Instant createdAt;
+        public Instant updatedAt;
+        public String status; // ACTIVE, ENDED, UPCOMING
+
+        public Response() {}
+
+        public Response(UUID id, String name, String description, Instant startTime, 
+                       Instant endTime, Integer retentionDays, UUID createdBy, 
+                       Instant createdAt, Instant updatedAt) {
+            this.id = id;
+            this.name = name;
+            this.description = description;
+            this.startTime = startTime;
+            this.endTime = endTime;
+            this.retentionDays = retentionDays;
+            this.createdBy = createdBy;
+            this.createdAt = createdAt;
+            this.updatedAt = updatedAt;
+            this.status = calculateStatus(startTime, endTime);
+        }
+
+        private String calculateStatus(Instant startTime, Instant endTime) {
+            Instant now = Instant.now();
+            if (startTime != null && endTime != null) {
+                if (now.isBefore(startTime)) return "UPCOMING";
+                if (now.isAfter(endTime)) return "ENDED";
+                return "ACTIVE";
+            }
+            if (startTime != null && now.isAfter(startTime)) {
+                return "ACTIVE";
+            }
+            return "UPCOMING";
+        }
+    }
+
+    public static class CreateRequest {
+        @NotBlank(message = "Exam name is required")
+        public String name;
+        
+        public String description;
+        
+        @NotNull(message = "Start time is required")
+        public Instant startTime;
+        
+        public Instant endTime;
+        
+        public Integer retentionDays = 30;
+    }
+
+    public static class UpdateRequest {
+        public String name;
+        public String description;
+        public Instant startTime;
+        public Instant endTime;
+        public Integer retentionDays;
+    }
+}

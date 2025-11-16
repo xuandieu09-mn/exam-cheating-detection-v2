@@ -3,6 +3,7 @@ package com.example.exam.service;
 import com.example.exam.dto.EventIngestDto;
 import com.example.exam.dto.SnapshotIngestDto;
 import com.example.exam.model.Event;
+import com.example.exam.model.EventType;
 import com.example.exam.model.MediaSnapshot;
 import com.example.exam.repository.EventRepository;
 import com.example.exam.repository.MediaSnapshotRepository;
@@ -24,15 +25,18 @@ public class IngestService {
     private final SessionRepository sessionRepository;
     private final EventRepository eventRepository;
     private final MediaSnapshotRepository snapshotRepository;
+    private final RuleService ruleService;
     private final ObjectMapper mapper = new ObjectMapper();
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(IngestService.class);
 
     public IngestService(SessionRepository sessionRepository,
                          EventRepository eventRepository,
-                         MediaSnapshotRepository snapshotRepository) {
+                         MediaSnapshotRepository snapshotRepository,
+                         RuleService ruleService) {
         this.sessionRepository = sessionRepository;
         this.eventRepository = eventRepository;
         this.snapshotRepository = snapshotRepository;
+        this.ruleService = ruleService;
     }
 
     @Transactional
@@ -86,6 +90,11 @@ public class IngestService {
                 e = eventRepository.save(e);
                 created++;
                 ids.add(e.getId());
+                
+                // Evaluate rules after saving event
+                if (item.eventType == EventType.TAB_SWITCH) {
+                    ruleService.evaluateTabSwitch(sessionId, Instant.ofEpochSecond(item.ts));
+                }
             } catch (DataIntegrityViolationException ex) {
                 // Safety net: treat DB unique violations as duplicates instead of 500
                 var maybe = eventRepository.findBySessionIdAndTsAndEventType(sessionId, item.ts, item.eventType)

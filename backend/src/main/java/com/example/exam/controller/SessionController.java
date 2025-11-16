@@ -79,4 +79,18 @@ public class SessionController {
         Session saved = sessionRepository.save(s);
         return ResponseEntity.ok(SessionResponse.from(saved));
     }
+
+    // Get all sessions for a specific user
+    @GetMapping("/user/{userId}")
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Get sessions by user",
+        description = "Returns all sessions for a specific user, ordered by started_at descending"
+    )
+    public ResponseEntity<List<SessionResponse>> getSessionsByUser(@PathVariable("userId") @NonNull UUID userId) {
+        List<SessionResponse> sessions = sessionRepository.findByUserIdOrderByStartedAtDesc(userId)
+                .stream()
+                .map(SessionResponse::from)
+                .toList();
+        return ResponseEntity.ok(sessions);
+    }
 }

@@ -5,12 +5,41 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- 1) Enum types
-CREATE TYPE IF NOT EXISTS user_role AS ENUM ('ADMIN', 'PROCTOR', 'REVIEWER', 'CANDIDATE');
-CREATE TYPE IF NOT EXISTS session_status AS ENUM ('ACTIVE', 'ENDED', 'ABORTED');
-CREATE TYPE IF NOT EXISTS event_type AS ENUM ('TAB_SWITCH', 'PASTE', 'FOCUS', 'BLUR');
-CREATE TYPE IF NOT EXISTS incident_type AS ENUM ('NO_FACE', 'MULTI_FACE', 'TAB_ABUSE', 'PASTE');
-CREATE TYPE IF NOT EXISTS incident_status AS ENUM ('OPEN', 'CONFIRMED', 'REJECTED');
-CREATE TYPE IF NOT EXISTS review_status AS ENUM ('CONFIRMED', 'REJECTED');
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('ADMIN', 'PROCTOR', 'REVIEWER', 'CANDIDATE');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE session_status AS ENUM ('ACTIVE', 'ENDED', 'ABORTED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE event_type AS ENUM ('TAB_SWITCH', 'PASTE', 'FOCUS', 'BLUR');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE incident_type AS ENUM ('NO_FACE', 'MULTI_FACE', 'TAB_ABUSE', 'PASTE');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE incident_status AS ENUM ('OPEN', 'CONFIRMED', 'REJECTED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE review_status AS ENUM ('CONFIRMED', 'REJECTED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- 2) Tables
 CREATE TABLE IF NOT EXISTS users (

@@ -1,5 +1,13 @@
 import React from 'react';
-import { Link, Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
+import { AuthProvider } from '../auth/AuthContext';
+import ProtectedRoute from '../components/ProtectedRoute';
+import DashboardLayout from '../layouts/DashboardLayout';
+import LoginPage from './LoginPage';
+import DashboardPage from './DashboardPage';
+import UnauthorizedPage from './UnauthorizedPage';
+
+// Demo pages (legacy)
 import StartSessionPage from './StartSessionPage';
 import IngestDemoPage from './IngestDemoPage';
 import IncidentsPage from './IncidentsPage';
@@ -7,21 +15,86 @@ import ReviewPage from './ReviewPage';
 
 const App: React.FC = () => {
   return (
-    <div style={{ fontFamily: 'system-ui', margin: '0 auto', maxWidth: 1000, padding: 24 }}>
-      <h1>Exam Cheating Detection (Frontend MVP)</h1>
-      <nav style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
-        <Link to="/">Start Session</Link>
-        <Link to="/ingest">Ingest Demo</Link>
-        <Link to="/incidents">Incidents</Link>
-        <Link to="/review">Review</Link>
-      </nav>
+    <AuthProvider>
       <Routes>
-        <Route path="/" element={<StartSessionPage />} />
-        <Route path="/ingest" element={<IngestDemoPage />} />
-        <Route path="/incidents" element={<IncidentsPage />} />
-        <Route path="/review" element={<ReviewPage />} />
+        {/* Public routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+        {/* Protected routes with Dashboard Layout */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <DashboardPage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Legacy demo pages (wrapped in layout) */}
+        <Route
+          path="/demo/start-session"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <StartSessionPage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/demo/ingest"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <IngestDemoPage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/demo/incidents"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <IncidentsPage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/demo/review"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <ReviewPage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Placeholder routes for menu items */}
+        <Route
+          path="/exams"
+          element={
+            <ProtectedRoute allowedRoles={['CANDIDATE']}>
+              <DashboardLayout>
+                <div style={{ padding: 24, background: 'white', borderRadius: 8 }}>
+                  <h2>Danh sách kỳ thi</h2>
+                  <p>Trang này sẽ được phát triển ở tuần 2</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Default redirect */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
-    </div>
+    </AuthProvider>
   );
 };
 

@@ -8,6 +8,11 @@ spring:
       resourceserver:
         jwt:
           public-key-location: classpath:keys/dev-public.pem
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 2000ms
 
 # Bật/tắt bắt buộc JWT cho API (dev để false để tiện phát triển). Khi true, cần cấu hình public key RS256.
 security:
