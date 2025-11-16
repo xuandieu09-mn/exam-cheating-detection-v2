@@ -24,9 +24,8 @@ spring:
     locations: classpath:db/migration
 
 # CORS (cho FE local)
-# cors.allowed-origins is read via @Value with default; keep here commented for reference
-# cors:
-#   allowed-origins: "http://localhost:3000,http://localhost:5173"
+cors:
+  allowed-origins: "http://localhost:3000,http://localhost:5173,http://localhost:5175"
 
 # Media storage
 # media.upload-dir is read via @Value with default; keep here commented for reference
