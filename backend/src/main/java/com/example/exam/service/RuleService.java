@@ -28,6 +28,8 @@ public class RuleService {
     // Rule thresholds
     private static final int TAB_SWITCH_THRESHOLD = 10;
     private static final int TAB_SWITCH_WINDOW_MINUTES = 5;
+    private static final int PASTE_THRESHOLD = 3;
+    private static final int PASTE_WINDOW_MINUTES = 2;
 
     public RuleService(StringRedisTemplate redisTemplate, IncidentRepository incidentRepository) {
         this.redisTemplate = redisTemplate;
@@ -85,7 +87,7 @@ public class RuleService {
         Incident incident = new Incident();
         incident.setSessionId(sessionId);
         incident.setType(IncidentType.TAB_ABUSE);
-        incident.setTs(ts.getEpochSecond());
+        incident.setTs(ts.toEpochMilli()); // Store as milliseconds
         incident.setScore(calculateTabAbuseScore(count));
         incident.setReason(String.format("Tab switched %d times in %d minutes (threshold: %d)", 
                 count, TAB_SWITCH_WINDOW_MINUTES, TAB_SWITCH_THRESHOLD));
@@ -118,5 +120,76 @@ public class RuleService {
             log.error("Error getting tab switch count for session {}", sessionId, e);
             return 0;
         }
+    }
+
+    /**
+     * Evaluate paste rule: if user pastes > 3 times in 2 minutes -> create PASTE incident
+     * 
+     * @param sessionId Session ID
+     * @param ts Timestamp of the paste event
+     */
+    public void evaluatePaste(UUID sessionId, Instant ts) {
+        try {
+            // Calculate time window (round to minute)
+            long minuteKey = ts.getEpochSecond() / 60;
+            
+            // Redis key: session:{sessionId}:paste:{minute}
+            String redisKey = String.format("session:%s:paste:%d", sessionId, minuteKey);
+            
+            // Increment counter
+            Long count = redisTemplate.opsForValue().increment(redisKey);
+            
+            // Set expiration (2 minutes + buffer)
+            if (count != null && count == 1) {
+                redisTemplate.expire(redisKey, Duration.ofMinutes(PASTE_WINDOW_MINUTES + 1));
+            }
+            
+            log.debug("Paste count for session {} at minute {}: {}", sessionId, minuteKey, count);
+            
+            // Check if threshold exceeded
+            if (count != null && count > PASTE_THRESHOLD) {
+                // Check if incident already created for this time window
+                String incidentCheckKey = String.format("session:%s:paste:incident:%d", sessionId, minuteKey);
+                Boolean alreadyCreated = redisTemplate.opsForValue().setIfAbsent(
+                    incidentCheckKey, 
+                    "1", 
+                    Duration.ofMinutes(PASTE_WINDOW_MINUTES + 1)
+                );
+                
+                if (Boolean.TRUE.equals(alreadyCreated)) {
+                    createPasteIncident(sessionId, ts, count.intValue());
+                    log.info("PASTE incident created for session {} - count: {}", sessionId, count);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error evaluating paste rule for session {}", sessionId, e);
+        }
+    }
+
+    /**
+     * Create PASTE incident
+     */
+    private void createPasteIncident(UUID sessionId, Instant ts, int count) {
+        Incident incident = new Incident();
+        incident.setSessionId(sessionId);
+        incident.setType(IncidentType.PASTE);
+        incident.setTs(ts.toEpochMilli());
+        incident.setScore(calculatePasteScore(count));
+        incident.setReason(String.format("Pasted %d times in %d minutes (threshold: %d)", 
+                count, PASTE_WINDOW_MINUTES, PASTE_THRESHOLD));
+        incident.setStatus(IncidentStatus.OPEN);
+        incident.setCreatedAt(Instant.now());
+        
+        incidentRepository.save(incident);
+    }
+
+    /**
+     * Calculate severity score for paste abuse (0.0 - 1.0)
+     */
+    private BigDecimal calculatePasteScore(int count) {
+        // Linear scale: 4 pastes = 0.6, 6+ pastes = 1.0
+        double score = Math.min(1.0, (count - PASTE_THRESHOLD) / 3.0 + 0.6);
+        score = Math.round(score * 100) / 100.0; // Round to 2 decimals
+        return BigDecimal.valueOf(score);
     }
 }

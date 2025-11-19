@@ -7,7 +7,7 @@ import type {
   Session,
   SnapshotUploadRequest,
   IngestEventsRequest,
-  IncidentListResponse,
+  PaginatedIncidents,
   Incident,
   ReviewIncidentRequest,
   ExamStats,
@@ -15,7 +15,7 @@ import type {
   ApiError,
 } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8080';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -112,8 +112,8 @@ class ApiClient {
     status?: string;
     page?: number;
     pageSize?: number;
-  }): Promise<IncidentListResponse> {
-    const response = await this.client.get<IncidentListResponse>('/incidents', { params });
+  }): Promise<PaginatedIncidents> {
+    const response = await this.client.get<PaginatedIncidents>('/api/incidents', { params });
     return response.data;
   }
 
@@ -146,4 +146,5 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+export const axiosInstance = apiClient['client'] as AxiosInstance;
 export default apiClient;

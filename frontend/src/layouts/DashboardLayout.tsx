@@ -22,25 +22,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       case 'CANDIDATE':
         return [
           { path: '/dashboard', icon: '🏠', label: 'Trang chủ' },
-          { path: '/exams', icon: '📝', label: 'Kỳ thi' },
-          { path: '/my-exam', icon: '✍️', label: 'Làm bài thi' },
-          { path: '/my-results', icon: '📊', label: 'Kết quả của tôi' },
-          { path: '/my-violations', icon: '⚠️', label: 'Vi phạm của tôi' },
+          { path: '/candidate/exams', icon: '📝', label: 'Kỳ thi' },
+          { path: '/candidate/my-results', icon: '📊', label: 'Kết quả của tôi' },
+          { path: '/candidate/my-violations', icon: '⚠️', label: 'Vi phạm của tôi' },
         ];
       case 'PROCTOR':
         return [
           { path: '/dashboard', icon: '🏠', label: 'Trang chủ' },
-          { path: '/active-exams', icon: '📝', label: 'Kỳ thi đang mở' },
-          { path: '/violations', icon: '🚨', label: 'Danh sách vi phạm' },
-          { path: '/live-monitoring', icon: '📹', label: 'Giám sát trực tiếp' },
+          { path: '/proctor/active-exams', icon: '📝', label: 'Kỳ thi đang mở' },
+          { path: '/proctor/violations', icon: '🚨', label: 'Danh sách vi phạm' },
+          { path: '/proctor/live-monitoring', icon: '📹', label: 'Giám sát trực tiếp' },
         ];
       case 'ADMIN':
         return [
           { path: '/dashboard', icon: '🏠', label: 'Trang chủ' },
-          { path: '/manage-exams', icon: '📚', label: 'Quản lý kỳ thi' },
-          { path: '/exam-statistics', icon: '📈', label: 'Thống kê' },
-          { path: '/all-violations', icon: '⚠️', label: 'Tất cả vi phạm' },
-          { path: '/system-settings', icon: '⚙️', label: 'Cài đặt hệ thống' },
+          { path: '/admin/manage-exams', icon: '📚', label: 'Quản lý kỳ thi' },
+          { path: '/admin/exam-statistics', icon: '📈', label: 'Thống kê' },
+          { path: '/admin/all-violations', icon: '⚠️', label: 'Tất cả vi phạm' },
+          { path: '/admin/system-settings', icon: '⚙️', label: 'Cài đặt hệ thống' },
         ];
       default:
         return [];

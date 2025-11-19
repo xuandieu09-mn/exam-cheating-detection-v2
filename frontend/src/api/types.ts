@@ -19,29 +19,31 @@ export interface LoginResponse {
 
 export interface Exam {
   id: string;
-  title: string;
+  name: string;
   description?: string;
-  duration_minutes: number;
-  start_time?: string;
-  end_time?: string;
-  retention_days: number;
-  created_at: string;
-  updated_at: string;
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+  status: 'UPCOMING' | 'ACTIVE' | 'ENDED';
+  retentionDays: number;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Session {
   id: string;
-  user_id: string;
-  exam_id: string;
-  started_at: string;
-  ended_at?: string;
-  status: 'ACTIVE' | 'ENDED' | 'SUSPENDED';
-  ip_address?: string;
-  user_agent?: string;
+  userId: string;
+  examId: string;
+  startedAt: string;
+  endedAt: string | null;
+  status: 'ACTIVE' | 'ENDED';
+  createdAt: string;
 }
 
 export interface StartSessionRequest {
-  exam_id: string;
+  examId: string;
+  userId: string;
 }
 
 export interface StartSessionResponse {
@@ -50,12 +52,12 @@ export interface StartSessionResponse {
 
 export interface MediaSnapshot {
   id: string;
-  session_id: string;
+  sessionId: string;
   ts: number;
-  object_key: string;
-  face_count?: number;
+  objectKey: string;
+  faceCount?: number;
   metadata?: Record<string, any>;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface SnapshotUploadItem {
@@ -89,30 +91,31 @@ export interface IngestEventsRequest {
 
 export interface Incident {
   id: string;
-  session_id: string;
-  incident_type: 'NO_FACE' | 'MULTI_FACE' | 'TAB_ABUSE' | 'PASTE' | 'CUSTOM';
+  sessionId: string;
+  ts: number;
+  type: 'TAB_ABUSE' | 'NO_FACE' | 'MULTI_FACE' | 'PASTE_DETECTED' | 'UNAUTHORIZED_DEVICE';
   score: number;
   reason: string;
-  evidence_url?: string;
-  status: 'PENDING' | 'CONFIRMED' | 'REJECTED';
-  detected_at: string;
-  created_at: string;
+  evidenceUrl: string | null;
+  status: 'OPEN' | 'CONFIRMED' | 'REJECTED';
+  createdAt: string;
 }
 
-export interface IncidentListResponse {
-  incidents: Incident[];
-  total: number;
-  page: number;
-  pageSize: number;
+export interface PaginatedIncidents {
+  content: Incident[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }
 
 export interface Review {
   id: string;
-  incident_id: string;
-  reviewer_id: string;
+  incidentId: string;
+  reviewerId: string;
   decision: 'CONFIRM' | 'REJECT';
   note?: string;
-  reviewed_at: string;
+  reviewedAt: string;
 }
 
 export interface ReviewIncidentRequest {
@@ -121,13 +124,13 @@ export interface ReviewIncidentRequest {
 }
 
 export interface ExamStats {
-  exam_id: string;
-  total_incidents: number;
-  confirmed_incidents: number;
-  rejected_incidents: number;
-  pending_incidents: number;
-  confirmation_rate: number;
-  incident_by_type: Record<string, number>;
+  examId: string;
+  totalIncidents: number;
+  confirmedIncidents: number;
+  rejectedIncidents: number;
+  pendingIncidents: number;
+  confirmationRate: number;
+  incidentByType: Record<string, number>;
 }
 
 export interface ApiError {

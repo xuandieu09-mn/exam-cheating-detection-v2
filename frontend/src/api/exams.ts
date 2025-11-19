@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { axiosInstance } from './client';
 
 export interface Exam {
   id: string;
@@ -22,7 +22,7 @@ export const examsApi = {
    */
   async getAll(status?: 'ACTIVE' | 'ENDED' | 'UPCOMING'): Promise<Exam[]> {
     const params = status ? { status } : {};
-    const response = await apiClient.get<Exam[]>('/api/exams', { params });
+    const response = await axiosInstance.get<Exam[]>('/api/exams', { params });
     return response.data;
   },
 
@@ -30,7 +30,7 @@ export const examsApi = {
    * Get a single exam by ID
    */
   async getById(examId: string): Promise<Exam> {
-    const response = await apiClient.get<Exam>(`/api/exams/${examId}`);
+    const response = await axiosInstance.get<Exam>(`/api/exams/${examId}`);
     return response.data;
   },
 
@@ -45,7 +45,7 @@ export const examsApi = {
     durationMinutes: number;
     retentionDays?: number;
   }): Promise<Exam> {
-    const response = await apiClient.post<Exam>('/api/exams', data);
+    const response = await axiosInstance.post<Exam>('/api/exams', data);
     return response.data;
   },
 
@@ -60,7 +60,7 @@ export const examsApi = {
     durationMinutes: number;
     retentionDays: number;
   }>): Promise<Exam> {
-    const response = await apiClient.put<Exam>(`/api/exams/${examId}`, data);
+    const response = await axiosInstance.put<Exam>(`/api/exams/${examId}`, data);
     return response.data;
   },
 
@@ -68,6 +68,6 @@ export const examsApi = {
    * Delete an exam (Admin only)
    */
   async delete(examId: string): Promise<void> {
-    await apiClient.delete(`/api/exams/${examId}`);
+    await axiosInstance.delete(`/api/exams/${examId}`);
   }
 };

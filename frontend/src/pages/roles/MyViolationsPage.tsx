@@ -100,7 +100,7 @@ export const MyViolationsPage = () => {
   };
 
   const formatTimestamp = (ts: number) => {
-    const date = new Date(ts * 1000);
+    const date = new Date(ts); // ts is already in milliseconds
     return date.toLocaleDateString('vi-VN', {
       year: 'numeric',
       month: '2-digit',
@@ -114,25 +114,26 @@ export const MyViolationsPage = () => {
   const getStatusBadge = (status: Incident['status']) => {
     switch (status) {
       case 'OPEN':
-        return <Badge className="bg-yellow-100 text-yellow-800">Chờ duyệt</Badge>;
+        return <Badge className="bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200">⏳ Chờ duyệt</Badge>;
       case 'CONFIRMED':
-        return <Badge variant="destructive">Đã xác nhận</Badge>;
+        return <Badge className="bg-gradient-to-r from-red-500 to-rose-500 text-white border-0 shadow-sm">✕ Đã xác nhận</Badge>;
       case 'REJECTED':
-        return <Badge className="bg-green-100 text-green-800">Đã từ chối</Badge>;
+        return <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200">✓ Đã từ chối</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
   const getTypeBadge = (type: Incident['type']) => {
-    const typeLabels: Record<Incident['type'], string> = {
-      'TAB_ABUSE': 'Chuyển tab nhiều',
-      'NO_FACE': 'Không phát hiện khuôn mặt',
-      'MULTI_FACE': 'Nhiều khuôn mặt',
-      'PASTE_DETECTED': 'Phát hiện dán',
-      'UNAUTHORIZED_DEVICE': 'Thiết bị không hợp lệ'
+    const typeConfig: Record<Incident['type'], { label: string; color: string }> = {
+      'TAB_ABUSE': { label: '🔄 Chuyển tab nhiều', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+      'NO_FACE': { label: '👤 Không phát hiện mặt', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+      'MULTI_FACE': { label: '👥 Nhiều khuôn mặt', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+      'PASTE_DETECTED': { label: '📋 Phát hiện dán', color: 'bg-pink-100 text-pink-800 border-pink-200' },
+      'UNAUTHORIZED_DEVICE': { label: '🔒 Thiết bị không hợp lệ', color: 'bg-red-100 text-red-800 border-red-200' }
     };
-    return <Badge variant="outline">{typeLabels[type] || type}</Badge>;
+    const config = typeConfig[type] || { label: type, color: 'bg-gray-100 text-gray-800 border-gray-200' };
+    return <Badge className={`${config.color} border`}>{config.label}</Badge>;
   };
 
   const getSeverityColor = (score: number) => {
@@ -157,35 +158,36 @@ export const MyViolationsPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Vi phạm của tôi</h1>
-        <p className="text-gray-600 mt-2">Xem lại các vi phạm đã được phát hiện trong các kỳ thi</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
+      <div className="container mx-auto p-6">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent mb-3">Vi phạm của tôi</h1>
+          <p className="text-gray-600 text-lg">Xem lại các vi phạm đã được phát hiện trong các kỳ thi</p>
+        </div>
 
-      {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Info Alert */}
+        <Alert className="mb-6 bg-blue-50 border-blue-200">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            <strong>Lưu ý:</strong> Các vi phạm với trạng thái "Chờ duyệt" sẽ được giám thị xem xét. 
+            Vi phạm "Đã xác nhận" có thể ảnh hưởng đến kết quả thi của bạn.
+          </AlertDescription>
         </Alert>
-      )}
 
-      {/* Info Alert */}
-      <Alert className="mb-6 bg-blue-50 border-blue-200">
-        <Info className="h-4 w-4 text-blue-600" />
-        <AlertDescription className="text-blue-800">
-          <strong>Lưu ý:</strong> Các vi phạm với trạng thái "Chờ duyệt" sẽ được giám thị xem xét. 
-          Vi phạm "Đã xác nhận" có thể ảnh hưởng đến kết quả thi của bạn.
-        </AlertDescription>
-      </Alert>
-
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg">Bộ lọc</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Filters */}
+        <Card className="mb-6 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-orange-50 to-yellow-50">
+            <CardTitle className="text-xl text-gray-800">🔍 Bộ lọc</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Loại vi phạm</label>
               <Select value={filterType} onValueChange={setFilterType}>
@@ -224,15 +226,21 @@ export const MyViolationsPage = () => {
 
       {/* Violations List */}
       {filteredViolations.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <AlertTriangle className="h-16 w-16 text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg">
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-6 rounded-full mb-6">
+              {violations.length === 0 ? (
+                <span className="text-6xl">✓</span>
+              ) : (
+                <AlertTriangle className="h-16 w-16 text-yellow-600" />
+              )}
+            </div>
+            <p className="text-gray-700 text-xl font-semibold">
               {violations.length === 0 
                 ? 'Bạn không có vi phạm nào' 
                 : 'Không tìm thấy vi phạm nào với bộ lọc hiện tại'}
             </p>
-            <p className="text-gray-400 text-sm mt-2">
+            <p className="text-gray-500 text-sm mt-2">
               {violations.length === 0 
                 ? 'Hãy tiếp tục duy trì kỷ luật thi cử!' 
                 : 'Thử thay đổi bộ lọc để xem các vi phạm khác'}
@@ -240,10 +248,10 @@ export const MyViolationsPage = () => {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Danh sách vi phạm ({filteredViolations.length}/{violations.length})
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-red-50 to-orange-50">
+            <CardTitle className="text-2xl text-gray-800">
+              ⚠️ Danh sách vi phạm ({filteredViolations.length}/{violations.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -287,43 +295,44 @@ export const MyViolationsPage = () => {
 
       {/* Summary Statistics */}
       {violations.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Tổng số vi phạm
+                📊 Tổng số vi phạm
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold">{violations.length}</p>
+              <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{violations.length}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-red-50 to-rose-50">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Đã xác nhận
+                ✕ Đã xác nhận
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-red-600">
+              <p className="text-4xl font-bold bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
                 {violations.filter(v => v.status === 'CONFIRMED').length}
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Đã từ chối
+                ✓ Đã từ chối
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-green-600">
+              <p className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 {violations.filter(v => v.status === 'REJECTED').length}
               </p>
             </CardContent>
           </Card>
         </div>
       )}
+      </div>
     </div>
   );
 };

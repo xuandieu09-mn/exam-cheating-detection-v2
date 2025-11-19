@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/auth/AuthContext';
+import { useLocation } from 'react-router-dom';
 import { sessionsApi, type Session } from '@/api/sessions';
 import { examsApi, type Exam } from '@/api/exams';
 import { incidentsApi, type Incident } from '@/api/incidents';
@@ -30,6 +31,7 @@ interface SessionWithDetails extends Session {
 
 export const MyResultsPage = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +43,7 @@ export const MyResultsPage = () => {
     if (user) {
       loadSessions();
     }
-  }, [user]);
+  }, [user, location]); // Reload when navigate back to this page
 
   const loadSessions = async () => {
     if (!user) return;
@@ -127,19 +129,19 @@ export const MyResultsPage = () => {
 
   const getStatusBadge = (status: Session['status']) => {
     if (status === 'ACTIVE') {
-      return <Badge className="bg-green-500">Đang thi</Badge>;
+      return <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-sm animate-pulse">Đang thi</Badge>;
     }
-    return <Badge variant="secondary">Đã nộp bài</Badge>;
+    return <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-sm">Đã nộp bài</Badge>;
   };
 
   const getViolationsBadge = (count: number) => {
     if (count === 0) {
-      return <Badge className="bg-green-100 text-green-800">Không vi phạm</Badge>;
+      return <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200">✓ Không vi phạm</Badge>;
     }
     if (count <= 2) {
-      return <Badge className="bg-yellow-100 text-yellow-800">{count} vi phạm</Badge>;
+      return <Badge className="bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200">⚠ {count} vi phạm</Badge>;
     }
-    return <Badge className="bg-red-100 text-red-800">{count} vi phạm</Badge>;
+    return <Badge className="bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200">✕ {count} vi phạm</Badge>;
   };
 
   if (loading) {
@@ -154,11 +156,12 @@ export const MyResultsPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Kết quả của tôi</h1>
-        <p className="text-gray-600 mt-2">Xem lại lịch sử thi và kết quả</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      <div className="container mx-auto p-6">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">Kết quả của tôi</h1>
+          <p className="text-gray-600 text-lg">Xem lại lịch sử thi và kết quả</p>
+        </div>
 
       {error && (
         <Alert variant="destructive" className="mb-6">
@@ -168,17 +171,19 @@ export const MyResultsPage = () => {
       )}
 
       {sessions.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <ClipboardList className="h-16 w-16 text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg">Bạn chưa tham gia kỳ thi nào</p>
-            <p className="text-gray-400 text-sm mt-2">Hãy tham gia một kỳ thi để xem kết quả</p>
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-6 rounded-full mb-6">
+              <ClipboardList className="h-16 w-16 text-purple-600" />
+            </div>
+            <p className="text-gray-700 text-xl font-semibold">Bạn chưa tham gia kỳ thi nào</p>
+            <p className="text-gray-500 text-sm mt-2">Hãy tham gia một kỳ thi để xem kết quả</p>
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Lịch sử thi ({sessions.length} kỳ)</CardTitle>
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
+            <CardTitle className="text-2xl text-gray-800">📋 Lịch sử thi ({sessions.length} kỳ)</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
@@ -289,6 +294,7 @@ export const MyResultsPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };

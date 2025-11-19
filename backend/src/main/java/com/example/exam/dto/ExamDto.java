@@ -19,6 +19,7 @@ public class ExamDto {
         public Instant createdAt;
         public Instant updatedAt;
         public String status; // ACTIVE, ENDED, UPCOMING
+        public Integer durationMinutes; // Calculated from startTime and endTime
 
         public Response() {}
 
@@ -35,6 +36,7 @@ public class ExamDto {
             this.createdAt = createdAt;
             this.updatedAt = updatedAt;
             this.status = calculateStatus(startTime, endTime);
+            this.durationMinutes = calculateDuration(startTime, endTime);
         }
 
         private String calculateStatus(Instant startTime, Instant endTime) {
@@ -48,6 +50,14 @@ public class ExamDto {
                 return "ACTIVE";
             }
             return "UPCOMING";
+        }
+
+        private Integer calculateDuration(Instant startTime, Instant endTime) {
+            if (startTime != null && endTime != null) {
+                long durationSeconds = endTime.getEpochSecond() - startTime.getEpochSecond();
+                return (int) (durationSeconds / 60); // Convert to minutes
+            }
+            return 0;
         }
     }
 

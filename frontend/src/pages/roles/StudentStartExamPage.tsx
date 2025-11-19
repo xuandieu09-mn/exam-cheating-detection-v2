@@ -69,12 +69,10 @@ export const StudentStartExamPage = () => {
       setStarting(true);
       setError(null);
 
-      // Create a new session
-      const session = await sessionsApi.create({
+      // Start a new session (use 'start' instead of 'create')
+      const session = await sessionsApi.start({
         examId: exam.id,
-        userId: user.id,
-        startedAt: new Date().toISOString(),
-        status: 'ACTIVE'
+        userId: user.id
       });
 
       // Navigate to exam page (mock exam for now)
@@ -155,7 +153,7 @@ export const StudentStartExamPage = () => {
               <Clock className="w-5 h-5 mr-3 mt-1 text-blue-600" />
               <div>
                 <p className="text-sm text-gray-500">Thời lượng</p>
-                <p className="font-medium">{exam.duration} phút</p>
+                <p className="font-medium">{exam.durationMinutes} phút</p>
               </div>
             </div>
             <div className="flex items-start">

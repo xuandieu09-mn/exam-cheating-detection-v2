@@ -85,7 +85,7 @@ const App: React.FC = () => {
 
         {/* Candidate routes */}
         <Route
-          path="/exams"
+          path="/candidate/exams"
           element={
             <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <DashboardLayout>
@@ -95,13 +95,17 @@ const App: React.FC = () => {
           }
         />
         <Route
+          path="/exams"
+          element={<Navigate to="/candidate/exams" replace />}
+        />
+        <Route
           path="/mock-exam/:examId"
           element={
             <MockExamPage />
           }
         />
         <Route
-          path="/my-results"
+          path="/candidate/my-results"
           element={
             <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <DashboardLayout>
@@ -111,7 +115,11 @@ const App: React.FC = () => {
           }
         />
         <Route
-          path="/my-violations"
+          path="/my-results"
+          element={<Navigate to="/candidate/my-results" replace />}
+        />
+        <Route
+          path="/candidate/my-violations"
           element={
             <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <DashboardLayout>
@@ -119,6 +127,10 @@ const App: React.FC = () => {
               </DashboardLayout>
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/my-violations"
+          element={<Navigate to="/candidate/my-violations" replace />}
         />
 
         {/* Default redirect */}

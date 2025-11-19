@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 
 const CandidateDashboard: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -71,6 +73,7 @@ const CandidateDashboard: React.FC = () => {
           cursor: 'pointer',
           transition: 'transform 0.2s'
         }}
+        onClick={() => navigate('/candidate/exams')}
         onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
         onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
@@ -89,6 +92,7 @@ const CandidateDashboard: React.FC = () => {
           cursor: 'pointer',
           transition: 'transform 0.2s'
         }}
+        onClick={() => navigate('/candidate/my-results')}
         onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
         onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
@@ -107,6 +111,7 @@ const CandidateDashboard: React.FC = () => {
           cursor: 'pointer',
           transition: 'transform 0.2s'
         }}
+        onClick={() => navigate('/candidate/my-violations')}
         onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
         onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >

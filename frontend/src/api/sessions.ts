@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { axiosInstance } from './client';
 
 export interface Session {
   id: string;
@@ -15,7 +15,7 @@ export const sessionsApi = {
    * Get all sessions for a specific user
    */
   async getByUser(userId: string): Promise<Session[]> {
-    const response = await apiClient.get<Session[]>(`/api/sessions/user/${userId}`);
+    const response = await axiosInstance.get<Session[]>(`/api/sessions/user/${userId}`);
     return response.data;
   },
 
@@ -23,7 +23,7 @@ export const sessionsApi = {
    * Get a specific session by ID
    */
   async getById(sessionId: string): Promise<Session> {
-    const response = await apiClient.get<Session>(`/api/sessions/${sessionId}`);
+    const response = await axiosInstance.get<Session>(`/api/sessions/${sessionId}`);
     return response.data;
   },
 
@@ -31,7 +31,7 @@ export const sessionsApi = {
    * Start a new session
    */
   async start(data: { examId: string; userId: string }): Promise<Session> {
-    const response = await apiClient.post<Session>('/api/sessions/start', data);
+    const response = await axiosInstance.post<Session>('/api/sessions/start', data);
     return response.data;
   },
 
@@ -39,7 +39,7 @@ export const sessionsApi = {
    * End a session
    */
   async end(sessionId: string): Promise<Session> {
-    const response = await apiClient.post<Session>(`/api/sessions/${sessionId}/end`);
+    const response = await axiosInstance.post<Session>(`/api/sessions/${sessionId}/end`);
     return response.data;
   },
 
@@ -47,7 +47,7 @@ export const sessionsApi = {
    * Get all sessions (Admin/Proctor only)
    */
   async getAll(): Promise<Session[]> {
-    const response = await apiClient.get<Session[]>('/api/sessions');
+    const response = await axiosInstance.get<Session[]>('/api/sessions');
     return response.data;
   }
 };

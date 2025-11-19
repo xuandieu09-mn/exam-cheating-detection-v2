@@ -11,7 +11,7 @@ export const useTimer = (options: UseTimerOptions) => {
 
   const [secondsLeft, setSecondsLeft] = useState(durationMinutes * 60);
   const [isRunning, setIsRunning] = useState(autoStart);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const onTimeUpRef = useRef(onTimeUp);
 
   // Keep onTimeUp ref updated

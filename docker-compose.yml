@@ -31,6 +31,24 @@ services:
       - redis-data:/data
     command: redis-server --appendonly yes
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: exam-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      TZ: UTC
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
   backend:
     build:
       context: ./backend
@@ -41,6 +59,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
       SPRING_PROFILES_ACTIVE: dev
       TZ: UTC
       MEDIA_UPLOAD_DIR: /app/uploads
@@ -52,10 +74,13 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - uploads:/app/uploads
 
 volumes:
   pgdata:
   redis-data:
+  rabbitmq-data:
   uploads:

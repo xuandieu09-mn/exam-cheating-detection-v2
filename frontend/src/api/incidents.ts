@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { axiosInstance } from './client';
 
 export interface Incident {
   id: string;
@@ -30,7 +30,7 @@ export const incidentsApi = {
     size?: number;
     sort?: string;
   }): Promise<Incident[] | PaginatedIncidents> {
-    const response = await apiClient.get<Incident[] | PaginatedIncidents>('/api/incidents', { params });
+    const response = await axiosInstance.get<Incident[] | PaginatedIncidents>('/api/incidents', { params });
     return response.data;
   },
 
@@ -38,7 +38,7 @@ export const incidentsApi = {
    * Get a specific incident by ID
    */
   async getById(incidentId: string): Promise<Incident> {
-    const response = await apiClient.get<Incident>(`/api/incidents/${incidentId}`);
+    const response = await axiosInstance.get<Incident>(`/api/incidents/${incidentId}`);
     return response.data;
   },
 
@@ -53,7 +53,7 @@ export const incidentsApi = {
     reason: string;
     evidenceUrl?: string;
   }): Promise<Incident> {
-    const response = await apiClient.post<Incident>('/api/incidents', data);
+    const response = await axiosInstance.post<Incident>('/api/incidents', data);
     return response.data;
   }
 };
