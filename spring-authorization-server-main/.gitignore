@@ -1,0 +1,63 @@
+.gradle
+build/
+*.idea/
+*.iml
+*.log
+tmp-migration
+
+out
+.DS_Store
+lib
+bin
+.vscode
+2025-*
+node_modules/
+**/node_modules/
+
+# -----------------------------
+# Java / Gradle / Spring Boot
+# Gradle cache and build output
+.gradle
+build/
+out/
+target/
+
+# Compiled class files, jars and wars
+*.class
+*.jar
+*.war
+
+# Gradle wrapper - keep wrapper properties but ignore jar if present
+# (if you commit the wrapper jar, remove the next line)
+gradle/wrapper/gradle-wrapper.jar
+
+# -----------------------------
+# Node / React / Frontend
+# Node modules (already present above, but keep for clarity)
+node_modules/
+
+# Build output directories
+dist/
+build/
+
+# Next.js, Vite and other bundlers caches
+.next/
+.vite/
+.parcel-cache/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs and debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Misc caches
+.cache/
