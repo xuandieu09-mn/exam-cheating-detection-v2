@@ -213,9 +213,31 @@ export const MockExamPage = () => {
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Warning:</strong> {violations.length} violation(s) detected
-              {violations.filter(v => v.type === 'TAB_SWITCH').length > 0 && 
-                ` (${violations.filter(v => v.type === 'TAB_SWITCH').length} tab switches)`}
+              <div>
+                <strong>Warning:</strong> {violations.length} violation(s) detected
+              </div>
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {violations.filter(v => v.type === 'TAB_SWITCH').length > 0 && (
+                  <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">
+                    {violations.filter(v => v.type === 'TAB_SWITCH').length} Tab Switch{violations.filter(v => v.type === 'TAB_SWITCH').length > 1 ? 'es' : ''}
+                  </span>
+                )}
+                {violations.filter(v => v.type === 'PASTE').length > 0 && (
+                  <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
+                    {violations.filter(v => v.type === 'PASTE').length} Paste{violations.filter(v => v.type === 'PASTE').length > 1 ? 's' : ''}
+                  </span>
+                )}
+                {violations.filter(v => v.type === 'FOCUS').length > 0 && (
+                  <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
+                    {violations.filter(v => v.type === 'FOCUS').length} Focus Event{violations.filter(v => v.type === 'FOCUS').length > 1 ? 's' : ''}
+                  </span>
+                )}
+                {violations.filter(v => v.type === 'BLUR').length > 0 && (
+                  <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                    {violations.filter(v => v.type === 'BLUR').length} Blur Event{violations.filter(v => v.type === 'BLUR').length > 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
             </AlertDescription>
           </Alert>
         </div>
