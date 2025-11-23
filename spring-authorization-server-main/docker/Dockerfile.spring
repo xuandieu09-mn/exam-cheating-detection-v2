@@ -1,0 +1,29 @@
+ARG MODULE
+ARG PORT=8080
+
+FROM gradle:8.10.2-jdk17 AS build
+ARG MODULE
+ARG PORT=8080
+WORKDIR /workspace
+
+COPY gradlew ./
+COPY gradle ./gradle
+COPY settings.gradle build.gradle gradle.properties ./
+COPY admin-service ./admin-service
+COPY authorization-server ./authorization-server
+COPY user-service ./user-service
+
+RUN chmod +x gradlew
+RUN ./gradlew :${MODULE}:bootJar
+
+FROM eclipse-temurin:17-jre-jammy
+ARG MODULE
+ARG PORT=8080
+
+WORKDIR /app
+ENV SPRING_PROFILES_ACTIVE=docker
+COPY --from=build /workspace/${MODULE}/build/libs/*.jar app.jar
+
+EXPOSE ${PORT}
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
