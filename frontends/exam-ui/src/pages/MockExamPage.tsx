@@ -71,7 +71,7 @@ export const MockExamPage = () => {
     
     try {
       await ingestApi.uploadSnapshot(sessionId, blob);
-      console.log(`Snapshot uploaded with ${detectedFaces ?? 'unknown'} face(s) detected`);
+      // Snapshot uploaded successfully
     } catch (error) {
       console.error('Error uploading snapshot:', error);
     }
@@ -82,9 +82,7 @@ export const MockExamPage = () => {
     captureInterval: 3000,
     enabled: !!sessionId && !submitting,
     enableFaceDetection: true,
-    onFaceCountChange: (count) => {
-      console.log(`Face count changed: ${count}`);
-    }
+    onFaceCountChange: setFaceCount
   });
 
   // Event detection

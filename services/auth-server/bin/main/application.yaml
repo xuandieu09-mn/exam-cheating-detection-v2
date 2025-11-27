@@ -5,7 +5,7 @@ spring:
   application:
     name: authorization-server
   datasource:
-    url: ${OAUTH_DB_URL:jdbc:postgresql://localhost:55432/exam_identity}
+    url: ${OAUTH_DB_URL:jdbc:postgresql://localhost:55432/identity_db}
     username: ${OAUTH_DB_USERNAME:postgres}
     password: ${OAUTH_DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver

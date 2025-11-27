@@ -2,6 +2,13 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import pkg from 'pg';
 const { Pool } = pkg;
 
+// Simple logger to replace console usage
+const logger = {
+  info: (message, ...args) => console.info(`[INFO] ${message}`, ...args),
+  warn: (message, ...args) => console.warn(`[WARN] ${message}`, ...args),
+  error: (message, ...args) => console.error(`[ERROR] ${message}`, ...args),
+};
+
 // PostgreSQL connection pool
 let pool = null;
 
@@ -19,10 +26,10 @@ const initializePool = () => {
     });
 
     pool.on('error', (err) => {
-      console.error('Unexpected error on idle PostgreSQL client', err);
+      logger.error('Unexpected error on idle PostgreSQL client', err);
     });
 
-    console.log('[TokenRepository] PostgreSQL connection pool initialized');
+    logger.info('[TokenRepository] PostgreSQL connection pool initialized');
   }
   return pool;
 };
@@ -33,7 +40,7 @@ const ENCRYPTION_KEY = process.env.BFF_ENCRYPTION_KEY
 const ALGORITHM = 'aes-256-gcm';
 
 if (!process.env.BFF_ENCRYPTION_KEY) {
-  console.warn('[TokenRepository] WARNING: BFF_ENCRYPTION_KEY not set, using random key (tokens will not persist across restarts)');
+  logger.warn('[TokenRepository] WARNING: BFF_ENCRYPTION_KEY not set, using random key (tokens will not persist across restarts)');
 }
 
 export const TokenRepository = {
@@ -68,9 +75,9 @@ export const TokenRepository = {
       `;
 
       await db.query(query, [userId, encryptedToken]);
-      console.log(`[TokenRepository] Securely stored refresh token in database for user ${userId}`);
+      logger.info(`[TokenRepository] Securely stored refresh token in database for user ${userId}`);
     } catch (error) {
-      console.error('[TokenRepository] Error saving refresh token:', error);
+      logger.error('[TokenRepository] Error saving refresh token:', error);
       throw error;
     }
   },
@@ -82,7 +89,7 @@ export const TokenRepository = {
       const result = await db.query(query, [userId]);
 
       if (result.rows.length === 0) {
-        console.log(`[TokenRepository] No refresh token found for user ${userId}`);
+        logger.info(`[TokenRepository] No refresh token found for user ${userId}`);
         return null;
       }
 
@@ -90,12 +97,12 @@ export const TokenRepository = {
       try {
         return TokenRepository.decrypt(encryptedToken);
       } catch (decryptError) {
-        console.error(`[TokenRepository] Failed to decrypt token for user ${userId}, deleting corrupted token`);
+        logger.error(`[TokenRepository] Failed to decrypt token for user ${userId}, deleting corrupted token`);
         await TokenRepository.deleteRefreshToken(userId);
         return null;
       }
     } catch (error) {
-      console.error('[TokenRepository] Error getting refresh token:', error);
+      logger.error('[TokenRepository] Error getting refresh token:', error);
       return null;
     }
   },
@@ -105,9 +112,9 @@ export const TokenRepository = {
       const db = initializePool();
       const query = 'DELETE FROM refresh_tokens WHERE user_id = $1';
       await db.query(query, [userId]);
-      console.log(`[TokenRepository] Revoked refresh token in database for user ${userId}`);
+      logger.info(`[TokenRepository] Revoked refresh token in database for user ${userId}`);
     } catch (error) {
-      console.error('[TokenRepository] Error deleting refresh token:', error);
+      logger.error('[TokenRepository] Error deleting refresh token:', error);
       throw error;
     }
   },
@@ -116,7 +123,7 @@ export const TokenRepository = {
     if (pool) {
       await pool.end();
       pool = null;
-      console.log('[TokenRepository] PostgreSQL connection pool closed');
+      logger.info('[TokenRepository] PostgreSQL connection pool closed');
     }
   }
 };

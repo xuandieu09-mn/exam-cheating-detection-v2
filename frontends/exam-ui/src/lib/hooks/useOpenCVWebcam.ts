@@ -149,7 +149,7 @@ export const useOpenCVWebcam = (options: UseOpenCVWebcamOptions = {}) => {
           };
           
           // Ensure video plays
-          videoRef.current.play().catch(e => {
+          videoRef.current.play().catch((e: Error) => {
             console.error('Error playing video:', e);
           });
         }
@@ -167,7 +167,7 @@ export const useOpenCVWebcam = (options: UseOpenCVWebcamOptions = {}) => {
     return () => {
       isMounted = false;
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track: MediaStreamTrack) => track.stop());
       }
     };
   }, [enabled, cvReady]);
@@ -318,7 +318,7 @@ export const useOpenCVWebcam = (options: UseOpenCVWebcamOptions = {}) => {
 
       // Convert current canvas to blob
       canvas.toBlob(
-        (blob) => {
+        (blob: Blob | null) => {
           if (blob) {
             onSnapshot(blob, faceCount);
             if (onFaceCountChange && faceCount !== undefined) {
@@ -357,7 +357,7 @@ export const useOpenCVWebcam = (options: UseOpenCVWebcamOptions = {}) => {
       
       // Clean up camera stream
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track: MediaStreamTrack) => track.stop());
       }
       
       // Clean up classifier

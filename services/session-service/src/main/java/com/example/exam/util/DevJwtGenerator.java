@@ -35,7 +35,7 @@ public class DevJwtGenerator {
         PrivateKey privateKey;
         try {
             privateKey = loadPrivateKeyFromPem("/keys/dev-private.pem");
-        } catch (Exception ex) {
+        } catch (Exception e) {
             System.out.println("[dev] Không tìm thấy/không đọc được private key trong classpath. Sẽ tạo cặp khóa mới...");
             KeyPairResult kp = generateRsaKeyPair();
             writeDevKeysToProject(kp);

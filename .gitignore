@@ -55,9 +55,10 @@ coverage/
 # =============================
 # Docker
 # =============================
-Dockerfile
-docker-compose.yml
-.dockerignore
+# Uncomment if you want to ignore Docker files:
+# Dockerfile
+# docker-compose.yml
+# .dockerignore
 
 # =============================
 # Miscellaneous

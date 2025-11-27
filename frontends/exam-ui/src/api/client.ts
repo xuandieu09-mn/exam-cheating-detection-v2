@@ -57,8 +57,8 @@ class ApiClient {
     }
   }
 
-  async register(data: any): Promise<any> {
-    const response = await axios.post('/api/register', data);
+  async register(data: Record<string, unknown>): Promise<{ success: boolean; message?: string }> {
+    const response = await axios.post<{ success: boolean; message?: string }>('/api/register', data);
     return response.data;
   }
 

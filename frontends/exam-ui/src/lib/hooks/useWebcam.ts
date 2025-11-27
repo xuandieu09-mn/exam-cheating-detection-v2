@@ -32,13 +32,13 @@ export const useWebcam = (options: UseWebcamOptions = {}) => {
 
     // Wait for OpenCV to be ready
     if (cv && typeof cv.Mat === 'function') {
-      console.log('OpenCV.js is ready');
+      // OpenCV.js is ready
       setCvReady(true);
     } else {
-      console.log('Waiting for OpenCV.js to load...');
+      // Waiting for OpenCV.js to load
       const checkInterval = setInterval(() => {
         if (cv && typeof cv.Mat === 'function') {
-          console.log('OpenCV.js loaded');
+          // OpenCV.js loaded
           setCvReady(true);
           clearInterval(checkInterval);
         }
@@ -77,7 +77,7 @@ export const useWebcam = (options: UseWebcamOptions = {}) => {
 
     return () => {
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current.getTracks().forEach((track: MediaStreamTrack) => track.stop());
       }
     };
   }, [enabled, cvReady]);
@@ -135,7 +135,7 @@ export const useWebcam = (options: UseWebcamOptions = {}) => {
           src.delete();
           gray.delete();
           
-          console.log('OpenCV image processing applied');
+          // OpenCV image processing applied
         } catch (error) {
           console.error('OpenCV processing error:', error);
           // Fallback to regular canvas if OpenCV fails
@@ -144,7 +144,7 @@ export const useWebcam = (options: UseWebcamOptions = {}) => {
 
       // Convert canvas to blob
       canvas.toBlob(
-        (blob) => {
+        (blob: Blob | null) => {
           if (blob) {
             onSnapshot(blob);
           }

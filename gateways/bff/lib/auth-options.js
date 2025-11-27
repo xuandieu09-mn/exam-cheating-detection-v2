@@ -64,18 +64,22 @@ export const authOptions = {
       type: "oauth",
       wellKnown: undefined,
       authorization: {
-        url: "http://localhost:9000/oauth2/authorize",
+        // Use external URL (accessible from browser) for authorization endpoint
+        url: (process.env.AUTH_SERVER_EXTERNAL_URL || "http://localhost:9000") + "/oauth2/authorize",
         params: {
           scope: "openid profile exam.read exam.write",
         }
       },
       token: {
+        // Use internal URL (container-to-container) for token endpoint
         url: process.env.AUTH_SERVER_TOKEN_URL || "http://localhost:9000/oauth2/token",
       },
       userinfo: {
+        // Use internal URL (container-to-container) for userinfo endpoint
         url: process.env.AUTH_SERVER_USERINFO_URL || "http://localhost:9000/userinfo"
       },
-      jwks_endpoint: "http://localhost:9000/oauth2/jwks",
+      // Use internal URL for JWKS endpoint
+      jwks_endpoint: (process.env.AUTH_SERVER_URL || "http://localhost:9000") + "/oauth2/jwks",
       idToken: true,
       checks: ["pkce", "state"],
       clientId: process.env.BFF_CLIENT_ID,
@@ -83,7 +87,8 @@ export const authOptions = {
       client: {
         token_endpoint_auth_method: "client_secret_basic",
       },
-      issuer: process.env.AUTH_SERVER_ISSUER || "http://localhost:9000",
+      // Use external issuer URL for JWT validation (tokens are issued with external URL)
+      issuer: process.env.AUTH_SERVER_EXTERNAL_URL || process.env.AUTH_SERVER_ISSUER || "http://localhost:9000",
       profile(profile) {
         return {
           id: profile.sub,

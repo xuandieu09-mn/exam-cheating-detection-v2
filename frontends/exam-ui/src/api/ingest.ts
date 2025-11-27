@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export interface EventItem {
   sessionId: string;
@@ -42,7 +42,7 @@ export interface IngestSnapshotsResponse {
 
 export const ingestApi = {
   ingestEvents: async (request: IngestEventsRequest): Promise<IngestEventsResponse> => {
-    const response = await axios.post(`${API_BASE_URL}/ingest/events`, request);
+    const response = await axios.post<IngestEventsResponse>(`${API_BASE_URL}/ingest/events`, request);
     return response.data;
   },
 
