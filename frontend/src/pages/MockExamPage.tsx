@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mockExamApi, type Question, type SubmitAnswer } from '@/api/mockExam';
 import { ingestApi, generateIdempotencyKey } from '@/api/ingest';
-import { useWebcam } from '@/lib/hooks/useWebcam';
+import { useOpenCVWebcam } from '@/lib/hooks/useOpenCVWebcam';
 import { useEventDetection, type EventType } from '@/lib/hooks/useEventDetection';
 import { useTimer } from '@/lib/hooks/useTimer';
 import { Button } from '@/ui/button';
@@ -11,7 +11,7 @@ import { Label } from '@/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/ui/radio-group';
 import { Textarea } from '@/ui/textarea';
 import { Alert, AlertDescription } from '@/ui/alert';
-import { AlertTriangle, Camera, Clock } from 'lucide-react';
+import { AlertTriangle, Camera, Clock, Eye } from 'lucide-react';
 
 export const MockExamPage = () => {
   const { examId } = useParams<{ examId: string }>();
@@ -65,22 +65,26 @@ export const MockExamPage = () => {
     autoStart: !loading
   });
 
-  // Webcam with auto snapshot
-  const handleSnapshot = async (blob: Blob) => {
+  // Webcam with auto snapshot using OpenCV
+  const handleSnapshot = async (blob: Blob, detectedFaces?: number) => {
     if (!sessionId) return;
     
     try {
       await ingestApi.uploadSnapshot(sessionId, blob);
-      console.log('Snapshot uploaded');
+      console.log(`Snapshot uploaded with ${detectedFaces ?? 'unknown'} face(s) detected`);
     } catch (error) {
       console.error('Error uploading snapshot:', error);
     }
   };
 
-  const { videoRef } = useWebcam({
+  const { videoRef, canvasRef, faceCount, cvReady, error: cvError } = useOpenCVWebcam({
     onSnapshot: handleSnapshot,
     captureInterval: 3000,
-    enabled: !!sessionId && !submitting
+    enabled: !!sessionId && !submitting,
+    enableFaceDetection: true,
+    onFaceCountChange: (count) => {
+      console.log(`Face count changed: ${count}`);
+    }
   });
 
   // Event detection
@@ -188,19 +192,58 @@ export const MockExamPage = () => {
                 </span>
               </div>
 
-              {/* Camera preview */}
-              <div className="relative">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                  className="w-40 h-30 rounded-lg border-2 border-gray-300 bg-black"
-                />
-                <div className="absolute top-1 right-1 bg-red-600 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                  <Camera className="w-3 h-3" />
-                  <span>REC</span>
+              {/* Camera preview with OpenCV processing */}
+              <div className="flex flex-col gap-2">
+                <div className="relative">
+                  {/* Video element for camera stream - positioned absolutely to sync with canvas */}
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    style={{
+                      position: 'absolute',
+                      opacity: 0,
+                      pointerEvents: 'none'
+                    }}
+                  />
+                  
+                  {/* Canvas with OpenCV processed output - visible */}
+                  <canvas
+                    ref={canvasRef}
+                    className="w-40 h-30 rounded-lg border-2 border-gray-300 bg-black"
+                    style={{ display: 'block' }}
+                  />
+                  
+                  <div className="absolute top-1 right-1 bg-red-600 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                    <Camera className="w-3 h-3" />
+                    <span>REC</span>
+                  </div>
+                  
+                  {/* Face detection indicator */}
+                  {cvReady && (
+                    <div className={`absolute top-1 left-1 text-white text-xs px-2 py-1 rounded flex items-center gap-1 ${
+                      faceCount === 1 ? 'bg-green-600' : 
+                      faceCount === 0 ? 'bg-yellow-600' : 
+                      'bg-red-600'
+                    }`}>
+                      <Eye className="w-3 h-3" />
+                      <span>{faceCount} {faceCount === 1 ? 'Face' : 'Faces'}</span>
+                    </div>
+                  )}
+                  
+                  {cvError && (
+                    <div className="absolute bottom-1 left-1 bg-orange-600 text-white text-xs px-2 py-1 rounded">
+                      {cvError}
+                    </div>
+                  )}
                 </div>
+                
+                {!cvReady && (
+                  <div className="text-xs text-gray-500 text-center">
+                    Loading OpenCV...
+                  </div>
+                )}
               </div>
             </div>
           </div>
