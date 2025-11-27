@@ -1,6 +1,0 @@
-rootProject.name = "exam-cheating-detection-v2"
-
-include 'authorization-server'
-include 'user-service'
-include 'admin-service'
-
