@@ -15,7 +15,6 @@ import type {
   ApiError,
 } from './types';
 
-// Point to BFF Proxy
 const API_BASE_URL = '/api/proxy';
 
 class ApiClient {
@@ -27,15 +26,14 @@ class ApiClient {
       headers: {
         'Content-Type': 'application/json',
       },
-      withCredentials: true, // Important for HttpOnly Cookies
+      withCredentials: true,
     });
 
-    // Response interceptor for error handling
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError<ApiError>) => {
-        if (error.response?.status === 401) {
-          // Redirect to BFF login if unauthorized
+        if (error.response?.status === 401 && error.config?.url?.includes('/api/auth/userinfo')) {
+          console.log('[ApiClient] Userinfo returned 401, redirecting to login');
           window.location.href = '/api/auth/login';
         }
         return Promise.reject(error);
@@ -43,7 +41,6 @@ class ApiClient {
     );
   }
 
-  // Auth endpoints - Handled by BFF now
   async login(): Promise<void> {
     const callbackUrl = window.location.origin;
     window.location.href = `/api/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
@@ -51,7 +48,6 @@ class ApiClient {
 
   async logout(): Promise<void> {
     const response = await axios.post('/api/auth/logout');
-    // Redirect to the URL provided by the server
     if (response.data?.redirectUrl) {
       window.location.href = response.data.redirectUrl;
     }

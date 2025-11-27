@@ -18,7 +18,7 @@ public class Review {
     private UUID incidentId;
 
     @Column(name = "reviewer_id")
-    private UUID reviewerId;
+    private String reviewerId;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -39,8 +39,8 @@ public class Review {
     public UUID getId() { return id; }
     public UUID getIncidentId() { return incidentId; }
     public void setIncidentId(UUID incidentId) { this.incidentId = incidentId; }
-    public UUID getReviewerId() { return reviewerId; }
-    public void setReviewerId(UUID reviewerId) { this.reviewerId = reviewerId; }
+    public String getReviewerId() { return reviewerId; }
+    public void setReviewerId(String reviewerId) { this.reviewerId = reviewerId; }
     public ReviewStatus getStatus() { return status; }
     public void setStatus(ReviewStatus status) { this.status = status; }
     public String getNote() { return note; }

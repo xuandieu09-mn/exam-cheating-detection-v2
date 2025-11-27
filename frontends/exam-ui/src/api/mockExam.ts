@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || '/api/proxy';
 
 export interface StartSessionRequest {
   examId: string;
@@ -50,17 +50,17 @@ export interface SubmitResponse {
 
 export const mockExamApi = {
   startSession: async (request: StartSessionRequest): Promise<StartSessionResponse> => {
-    const response = await axios.post(`${API_BASE_URL}/mock-exam/start`, request);
+    const response = await axios.post(`${API_BASE_URL}/api/mock-exam/start`, request);
     return response.data;
   },
 
   getQuestions: async (examId: string): Promise<GetQuestionsResponse> => {
-    const response = await axios.get(`${API_BASE_URL}/mock-exam/${examId}/questions`);
+    const response = await axios.get(`${API_BASE_URL}/api/mock-exam/${examId}/questions`);
     return response.data;
   },
 
   submitExam: async (request: SubmitRequest): Promise<SubmitResponse> => {
-    const response = await axios.post(`${API_BASE_URL}/mock-exam/submit`, request);
+    const response = await axios.post(`${API_BASE_URL}/api/mock-exam/submit`, request);
     return response.data;
   }
 };

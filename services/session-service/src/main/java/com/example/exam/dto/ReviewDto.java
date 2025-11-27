@@ -12,7 +12,7 @@ public class ReviewDto {
     public static class CreateRequest {
         @NotNull
         public UUID incidentId;
-        public UUID reviewerId;
+        public String reviewerId;
         @NotNull
         public ReviewStatus status;
         public String note;
@@ -21,7 +21,7 @@ public class ReviewDto {
     public static class Response {
         public UUID id;
         public UUID incidentId;
-        public UUID reviewerId;
+        public String reviewerId;
         public ReviewStatus status;
         public String note;
         public Instant reviewedAt;

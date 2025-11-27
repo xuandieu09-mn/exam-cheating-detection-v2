@@ -1,4 +1,4 @@
-package main.java.com.examplatform.auth.config;
+package com.examplatform.auth.config;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;

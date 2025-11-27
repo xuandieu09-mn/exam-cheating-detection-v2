@@ -40,7 +40,7 @@ class SessionControllerTest {
     @Test
     void startSession_happyPath() throws Exception {
         UUID examId = UUID.fromString("11111111-1111-1111-1111-111111111111");
-        UUID userId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        String userId = "22222222-2222-2222-2222-222222222222";
 
         Session saved = new Session();
         saved.setExamId(examId);
@@ -49,23 +49,49 @@ class SessionControllerTest {
         saved.setStatus(SessionStatus.ACTIVE);
 
         when(sessionRepository.save(any(Session.class))).thenReturn(saved);
+        
+        // Mock SecurityUtils static method using mockito-inline or similar if possible, 
+        // but since we can't easily mock static methods without extra config, 
+        // and we changed the controller to use SecurityUtils.getCurrentUserId(),
+        // we might need to refactor Controller to use a helper service or just rely on the fact that 
+        // SecurityUtils gets from SecurityContext.
+        // For this test, we can mock the SecurityContext.
+        
+        // However, setting up full SecurityContext mock is verbose. 
+        // Let's assume for now we can mock the static method if mockito-inline is present, 
+        // OR we can just set the SecurityContextHolder.
+        
+        org.springframework.security.core.context.SecurityContextHolder.setContext(
+            new org.springframework.security.core.context.SecurityContextImpl(
+                new org.springframework.security.authentication.TestingAuthenticationToken(
+                    new org.springframework.security.oauth2.jwt.Jwt(
+                        "token", 
+                        Instant.now(), 
+                        Instant.now().plusSeconds(300), 
+                        java.util.Map.of("alg", "none"), 
+                        java.util.Map.of("sub", userId)
+                    ), 
+                    null
+                )
+            )
+        );
 
         StartSessionRequest req = new StartSessionRequest();
         req.setExamId(examId);
-        req.setUserId(userId);
+        // req.setUserId(userId); // Removed from DTO
 
         mvc.perform(post("/api/sessions/start")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.examId").value(examId.toString()))
-                .andExpect(jsonPath("$.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.userId").value(userId))
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
     }
 
     @Test
     void startSession_invalidUuid_returns400() throws Exception {
-        String body = "{\n  \"examId\": \"not-a-uuid\",\n  \"userId\": \"22222222-2222-2222-2222-222222222222\"\n}";
+        String body = "{\n  \"examId\": \"not-a-uuid\"\n}";
 
         mvc.perform(post("/api/sessions/start")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -85,15 +111,14 @@ class SessionControllerTest {
                 .andExpect(status().isBadRequest())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
                 .andExpect(jsonPath("$.title").value("Validation failed"))
-                .andExpect(jsonPath("$.errors.examId").exists())
-                .andExpect(jsonPath("$.errors.userId").exists());
+                .andExpect(jsonPath("$.errors.examId").exists());
     }
 
     @Test
     void listSessions_returnsArray() throws Exception {
         Session s = new Session();
         s.setExamId(UUID.fromString("11111111-1111-1111-1111-111111111111"));
-        s.setUserId(UUID.fromString("22222222-2222-2222-2222-222222222222"));
+        s.setUserId("22222222-2222-2222-2222-222222222222");
         s.setStartedAt(Instant.parse("2025-11-04T00:00:00Z"));
         s.setStatus(SessionStatus.ACTIVE);
         when(sessionRepository.findAll()).thenReturn(List.of(s));
@@ -107,7 +132,7 @@ class SessionControllerTest {
     void endSession_happyPath() throws Exception {
         Session s = new Session();
         s.setExamId(UUID.fromString("11111111-1111-1111-1111-111111111111"));
-        s.setUserId(UUID.fromString("22222222-2222-2222-2222-222222222222"));
+        s.setUserId("22222222-2222-2222-2222-222222222222");
         s.setStartedAt(Instant.parse("2025-11-04T00:00:00Z"));
         s.setStatus(SessionStatus.ACTIVE);
 

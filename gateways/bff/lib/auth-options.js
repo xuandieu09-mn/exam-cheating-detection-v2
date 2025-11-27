@@ -3,7 +3,6 @@ import { TokenRepository } from "./token-repository";
 async function refreshAccessToken(token) {
   try {
     const url = process.env.AUTH_SERVER_TOKEN_URL || "http://localhost:9000/oauth2/token";
-
     const storedRefreshToken = await TokenRepository.getRefreshToken(token.sub);
 
     if (!storedRefreshToken) {
@@ -42,7 +41,8 @@ async function refreshAccessToken(token) {
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + (refreshedTokens.expires_in * 1000),
+      accessTokenExpires: Date.now() + ((refreshedTokens.expires_in || 300) * 1000),
+      idToken: refreshedTokens.id_token || token.idToken
     };
   } catch (error) {
     console.error("RefreshAccessTokenError", error);
@@ -66,7 +66,7 @@ export const authOptions = {
       authorization: {
         url: "http://localhost:9000/oauth2/authorize",
         params: {
-          scope: "openid profile exam.read exam.write",
+          scope: "openid profile exam.read exam.write offline_access",
         }
       },
       token: {
@@ -96,18 +96,13 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user, account }) {
       if (account && user) {
-        console.log("[JWT Callback] User ID:", user.id, "Username:", user.name);
-        console.log("[JWT Callback] Account expires_in:", account.expires_in, "seconds");
+        console.log("[JWT Callback] Initial Sign In");
 
         const expiresInSeconds = account.expires_in || 300;
         const expiresAt = Date.now() + (expiresInSeconds * 1000);
-        console.log("[JWT Callback] Token will expire at:", new Date(expiresAt).toISOString());
 
         if (account.refresh_token) {
-          console.log("[JWT Callback] Refresh token length:", account.refresh_token.length);
           await TokenRepository.saveRefreshToken(user.id, account.refresh_token);
-        } else {
-          console.log("[JWT Callback] No refresh token in account");
         }
 
         return {
@@ -120,23 +115,24 @@ export const authOptions = {
       }
 
       const now = Date.now();
-      const expiresIn = Math.floor((token.accessTokenExpires - now) / 1000);
-      console.log(`[JWT Callback] Token check - expires in ${expiresIn} seconds`);
+      const BUFFER_TIME = 60 * 1000;
 
-      const storedRefreshToken = await TokenRepository.getRefreshToken(token.sub);
-      if (!storedRefreshToken) {
-        console.log("[JWT Callback] No refresh token in database - session invalidated");
-        throw new Error("SessionInvalidated");
-      }
-
-      if (now < token.accessTokenExpires - 15000) {
-        console.log("[JWT Callback] Token still valid, using cached token");
+      if (now < token.accessTokenExpires - BUFFER_TIME) {
         return token;
       }
 
       console.log("[JWT Callback] Token expired or expiring soon, refreshing...");
+
+      const storedRefreshToken = await TokenRepository.getRefreshToken(token.sub);
+      if (!storedRefreshToken) {
+        console.log("[JWT Callback] No refresh token in database - Session Invalidated");
+
+        return { ...token, error: "SessionInvalidated" };
+      }
+
       return refreshAccessToken(token);
     },
+
     async session({ session, token }) {
       session.user = token.user;
       session.accessToken = token.accessToken;
@@ -145,57 +141,24 @@ export const authOptions = {
       return session;
     },
     async signOut({ token }) {
-      // Revoke refresh token from database
       if (token?.sub) {
-        console.log(`[SignOut] Revoking refresh token for user ${token.sub}`);
         try {
           await TokenRepository.deleteRefreshToken(token.sub);
-          console.log(`[SignOut] Successfully revoked refresh token for user ${token.sub}`);
         } catch (error) {
           console.error(`[SignOut] Error revoking refresh token:`, error);
         }
       }
     },
+
     async redirect({ url, baseUrl }) {
-      const reactClientUrl = process.env.REACT_CLIENT_URL || "http://localhost:5174";
       const authServerIssuer = process.env.AUTH_SERVER_ISSUER || "http://localhost:9000";
-
-      console.log("[Redirect Callback] url:", url, "baseUrl:", baseUrl);
-
       if (url.startsWith(authServerIssuer)) {
-        console.log("[Redirect Callback] Allowing redirect to Authorization Server");
         return url;
       }
-
-      try {
-        const urlObj = new URL(url);
-        const baseUrlObj = new URL(baseUrl);
-        const reactUrlObj = new URL(reactClientUrl);
-
-        if (urlObj.origin !== baseUrlObj.origin && urlObj.origin !== reactUrlObj.origin) {
-          console.log("[Redirect Callback] Allowing external redirect");
-          return url;
-        }
-      } catch (e) {
-      }
-
-      if (url.startsWith(reactClientUrl)) {
-        console.log("[Redirect Callback] Redirecting to React client");
+      if (url.includes('/login')) {
         return url;
       }
-
-      if (url.startsWith("/") || url === baseUrl) {
-        console.log("[Redirect Callback] Converting relative/base URL to React client");
-        return reactClientUrl;
-      }
-
-      if (url.startsWith(baseUrl)) {
-        console.log("[Redirect Callback] Converting BFF URL to React client");
-        return reactClientUrl;
-      }
-
-      console.log("[Redirect Callback] Allowing URL as-is:", url);
-      return url;
+      return baseUrl;
     },
   },
   cookies: {
@@ -205,7 +168,7 @@ export const authOptions = {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
       },
     },
   },

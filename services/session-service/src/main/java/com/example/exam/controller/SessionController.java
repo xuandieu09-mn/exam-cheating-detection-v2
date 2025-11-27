@@ -29,12 +29,13 @@ public class SessionController {
     @PostMapping("/start")
     @io.swagger.v3.oas.annotations.Operation(
         summary = "Start a session",
-        description = "Creates a new exam session for a given examId and userId"
+        description = "Creates a new exam session for a given examId and current user"
     )
     public ResponseEntity<SessionResponse> startSession(@Valid @RequestBody StartSessionRequest req) {
         Session s = new Session();
         s.setExamId(req.getExamId());
-        s.setUserId(req.getUserId());
+        // Get userId from JWT token
+        s.setUserId(com.example.exam.util.SecurityUtils.getCurrentUserId());
         s.setStartedAt(Instant.now());
         s.setStatus(SessionStatus.ACTIVE);
         Session saved = sessionRepository.save(s);
@@ -74,8 +75,8 @@ public class SessionController {
         Optional<Session> maybe = sessionRepository.findById(id);
         if (maybe.isEmpty()) return ResponseEntity.notFound().build();
         Session s = maybe.get();
-    s.setEndedAt(Instant.now());
-    s.setStatus(SessionStatus.ENDED);
+        s.setEndedAt(Instant.now());
+        s.setStatus(SessionStatus.ENDED);
         Session saved = sessionRepository.save(s);
         return ResponseEntity.ok(SessionResponse.from(saved));
     }
@@ -86,11 +87,16 @@ public class SessionController {
         summary = "Get sessions by user",
         description = "Returns all sessions for a specific user, ordered by started_at descending"
     )
-    public ResponseEntity<List<SessionResponse>> getSessionsByUser(@PathVariable("userId") @NonNull UUID userId) {
-        List<SessionResponse> sessions = sessionRepository.findByUserIdOrderByStartedAtDesc(userId)
-                .stream()
-                .map(SessionResponse::from)
-                .toList();
-        return ResponseEntity.ok(sessions);
+    public ResponseEntity<List<SessionResponse>> getSessionsByUser(@PathVariable("userId") @NonNull String userId) {
+        try {
+            List<SessionResponse> sessions = sessionRepository.findByUserIdOrderByStartedAtDesc(userId)
+                    .stream()
+                    .map(SessionResponse::from)
+                    .toList();
+            return ResponseEntity.ok(sessions);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 }

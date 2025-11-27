@@ -59,6 +59,7 @@ public class ExamService {
         exam.setStartTime(request.startTime);
         exam.setEndTime(request.endTime);
         exam.setRetentionDays(request.retentionDays != null ? request.retentionDays : 30);
+        exam.setCreatedBy(com.example.exam.util.SecurityUtils.getCurrentUserId());
         exam.setCreatedAt(Instant.now());
         exam.setUpdatedAt(Instant.now());
         

@@ -14,7 +14,7 @@ public class MockExamDto {
             UUID examId,
             
             @NotNull(message = "userId is required")
-            UUID userId
+            String userId
     ) {}
 
     public record StartSessionResponse(

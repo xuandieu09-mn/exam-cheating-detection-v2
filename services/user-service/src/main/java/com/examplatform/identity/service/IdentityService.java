@@ -64,6 +64,13 @@ public class IdentityService {
         return toResponse(user);
     }
 
+    @Transactional(readOnly = true)
+    public UserResponse findById(UUID id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+        return toResponse(user);
+    }
+
     private void ensureUsernameAvailable(String username) {
         if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new IllegalArgumentException("Username already taken");

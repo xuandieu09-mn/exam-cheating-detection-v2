@@ -26,5 +26,11 @@ public class AdminUserController {
         UserResponse user = identityService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
+
+    @org.springframework.web.bind.annotation.GetMapping("/{userId}")
+    public ResponseEntity<UserResponse> getUserById(@org.springframework.web.bind.annotation.PathVariable java.util.UUID userId) {
+        UserResponse user = identityService.findById(userId);
+        return ResponseEntity.ok(user);
+    }
 }
 

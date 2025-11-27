@@ -196,30 +196,13 @@ services:
     volumes:
       - uploads:/app/uploads
 
-  # --- Frontends ---
-  admin-ui:
-    build:
-      context: ./frontends/admin-ui
-      dockerfile: Dockerfile
-      args:
-        VITE_OIDC_ISSUER: http://localhost:9000
-        VITE_OIDC_CLIENT_ID: react-test-client
-        VITE_OIDC_REDIRECT_URI: http://localhost:5173/auth/callback
-        VITE_OIDC_SCOPE: "openid profile exam.read"
-    container_name: exam-admin-ui
-    ports:
-      - "5173:80"
-    depends_on:
-      authorization-server:
-        condition: service_started
-
   exam-ui:
     build:
       context: ./frontends/exam-ui
       dockerfile: Dockerfile
     container_name: exam-ui
     ports:
-      - "5174:80" # Changed to 5174 to avoid conflict
+      - "5174:80" 
     depends_on:
       bff-gateway:
         condition: service_started

@@ -27,7 +27,7 @@ public class Exam {
     private Integer retentionDays;
 
     @Column(name = "created_by")
-    private UUID createdBy;
+    private String createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -51,8 +51,8 @@ public class Exam {
     public void setEndTime(Instant endTime) { this.endTime = endTime; }
     public Integer getRetentionDays() { return retentionDays; }
     public void setRetentionDays(Integer retentionDays) { this.retentionDays = retentionDays; }
-    public UUID getCreatedBy() { return createdBy; }
-    public void setCreatedBy(UUID createdBy) { this.createdBy = createdBy; }
+    public String getCreatedBy() { return createdBy; }
+    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

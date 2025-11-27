@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class SessionResponse {
     private UUID id;
-    private UUID userId;
+    private String userId;
     private UUID examId;
     private Instant startedAt;
     private Instant endedAt;
@@ -25,7 +25,7 @@ public class SessionResponse {
     }
 
     public UUID getId() { return id; }
-    public UUID getUserId() { return userId; }
+    public String getUserId() { return userId; }
     public UUID getExamId() { return examId; }
     public Instant getStartedAt() { return startedAt; }
     public Instant getEndedAt() { return endedAt; }

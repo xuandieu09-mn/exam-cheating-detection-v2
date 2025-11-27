@@ -11,11 +11,12 @@ const DashboardPage: React.FC = () => {
     case 'CANDIDATE':
       return <CandidateDashboard />;
     case 'PROCTOR':
+    case 'REVIEWER':
       return <ProctorDashboard />;
     case 'ADMIN':
       return <AdminDashboard />;
     default:
-      return <div>Không xác định vai trò</div>;
+      return <div>Không xác định vai trò: {user?.role}</div>;
   }
 };
 

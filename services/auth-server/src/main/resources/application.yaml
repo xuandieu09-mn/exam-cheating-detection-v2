@@ -38,4 +38,10 @@ management:
       exposure:
         include: health,info
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    com.example.authserver: DEBUG
+
 

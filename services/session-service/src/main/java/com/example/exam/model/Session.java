@@ -1,8 +1,6 @@
 package com.example.exam.model;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -14,7 +12,7 @@ public class Session {
     private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    private String userId;
 
     @Column(name = "exam_id", nullable = false)
     private UUID examId;
@@ -26,8 +24,8 @@ public class Session {
     private Instant endedAt;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", columnDefinition = "session_status")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     private SessionStatus status;
 
     public Session() {
@@ -36,8 +34,8 @@ public class Session {
 
     // getters and setters
     public UUID getId() { return id; }
-    public UUID getUserId() { return userId; }
-    public void setUserId(UUID userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
     public UUID getExamId() { return examId; }
     public void setExamId(UUID examId) { this.examId = examId; }
     public Instant getStartedAt() { return startedAt; }

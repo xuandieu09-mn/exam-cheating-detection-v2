@@ -171,6 +171,15 @@ BEGIN
   INSERT INTO user_roles (user_id, role_id)
   VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-000000000004', '44444444-4444-4444-4444-444444444444')
   ON CONFLICT DO NOTHING;
+
+  -- Insert user1 for testing
+  INSERT INTO users (id, username, email, password_hash, role, enabled)
+  VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-000000000005', 'user1', 'user1@example.com', '{noop}password', 'CANDIDATE', TRUE)
+  ON CONFLICT (username) DO NOTHING;
+  
+  INSERT INTO user_roles (user_id, role_id)
+  VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-000000000005', '44444444-4444-4444-4444-444444444444')
+  ON CONFLICT DO NOTHING;
 END $$;
 
 -- Seed Data for OAuth2 Clients
@@ -196,7 +205,7 @@ INSERT INTO oauth2_registered_client (
     'client_secret_basic',
     'refresh_token,authorization_code',
     'http://localhost:8080/api/auth/callback/exam-oidc',
-    'http://localhost:5174',
+    'http://localhost:5173/login',
     'openid,profile,exam.read,exam.write',
     '{"@class":"java.util.Collections$UnmodifiableMap","settings.client.require-proof-key":false,"settings.client.require-authorization-consent":true}',
     '{"@class":"java.util.Collections$UnmodifiableMap","settings.token.reuse-refresh-tokens":false,"settings.token.id-token-signature-algorithm":["org.springframework.security.oauth2.jose.jws.SignatureAlgorithm","RS256"],"settings.token.access-token-time-to-live":["java.time.Duration",900.000000000],"settings.token.access-token-format":{"@class":"org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat","value":"self-contained"},"settings.token.refresh-token-time-to-live":["java.time.Duration",43200.000000000],"settings.token.authorization-code-time-to-live":["java.time.Duration",300.000000000],"settings.token.device-code-time-to-live":["java.time.Duration",300.000000000]}'
@@ -222,6 +231,35 @@ INSERT INTO oauth2_registered_client (
     CURRENT_TIMESTAMP,
     '{noop}session-secret', -- session-secret
     'Session Service',
+    'client_secret_basic',
+    'client_credentials',
+    NULL,
+    NULL,
+    'internal.read,internal.write',
+    '{"@class":"java.util.Collections$UnmodifiableMap","settings.client.require-proof-key":false,"settings.client.require-authorization-consent":false}',
+    '{"@class":"java.util.Collections$UnmodifiableMap","settings.token.access-token-time-to-live":["java.time.Duration",3600.000000000],"settings.token.access-token-format":{"@class":"org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat","value":"self-contained"}}'
+) ON CONFLICT (client_id) DO NOTHING;
+
+-- Register User Service as Client (for potential future inter-service calls)
+INSERT INTO oauth2_registered_client (
+    id, 
+    client_id, 
+    client_id_issued_at, 
+    client_secret, 
+    client_name, 
+    client_authentication_methods, 
+    authorization_grant_types, 
+    redirect_uris, 
+    post_logout_redirect_uris, 
+    scopes, 
+    client_settings, 
+    token_settings
+) VALUES (
+    'user-service-client-id',
+    'user-service',
+    CURRENT_TIMESTAMP,
+    '{noop}user-secret', -- user-secret
+    'User Service',
     'client_secret_basic',
     'client_credentials',
     NULL,

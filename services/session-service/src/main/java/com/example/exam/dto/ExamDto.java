@@ -15,7 +15,7 @@ public class ExamDto {
         public Instant startTime;
         public Instant endTime;
         public Integer retentionDays;
-        public UUID createdBy;
+        public String createdBy;
         public Instant createdAt;
         public Instant updatedAt;
         public String status; // ACTIVE, ENDED, UPCOMING
@@ -24,7 +24,7 @@ public class ExamDto {
         public Response() {}
 
         public Response(UUID id, String name, String description, Instant startTime, 
-                       Instant endTime, Integer retentionDays, UUID createdBy, 
+                       Instant endTime, Integer retentionDays, String createdBy, 
                        Instant createdAt, Instant updatedAt) {
             this.id = id;
             this.name = name;

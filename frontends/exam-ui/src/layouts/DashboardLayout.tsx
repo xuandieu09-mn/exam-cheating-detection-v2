@@ -31,6 +31,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           { path: '/candidate/my-violations', icon: '⚠️', label: 'Vi phạm của tôi' },
         ];
       case 'PROCTOR':
+      case 'REVIEWER':
         return [
           { path: '/dashboard', icon: '🏠', label: 'Trang chủ' },
           { path: '/proctor/active-exams', icon: '📝', label: 'Kỳ thi đang mở' },
@@ -74,7 +75,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </h2>
           <p style={{ margin: '4px 0 0 0', fontSize: 12, color: '#a0aec0' }}>
             {user.role === 'CANDIDATE' && 'Thí sinh'}
-            {user.role === 'PROCTOR' && 'Giám thị'}
+            {(user.role === 'PROCTOR' || user.role === 'REVIEWER') && 'Giám thị'}
             {user.role === 'ADMIN' && 'Quản trị viên'}
           </p>
         </div>

@@ -8,32 +8,73 @@ export default async function handler(req, res) {
   }
 
   try {
-    const session = await getServerSession(req, res, authOptions);
+    let sessionData = null;
+    let userId = null;
+    let idToken = null;
 
-    if (session?.user?.id) {
-      console.log(`[Logout] Revoking tokens for user ${session.user.id}`);
-      await TokenRepository.deleteRefreshToken(session.user.id);
+    const sessionCookie = req.cookies['bff_session'];
+    if (sessionCookie) {
+      try {
+        sessionData = JSON.parse(decodeURIComponent(sessionCookie));
+        userId = sessionData.user?.id;
+        idToken = sessionData.idToken;
+      } catch (e) {
+        console.error('[Logout] Failed to parse bff_session cookie:', e);
+      }
     }
 
-    const sessionCookieName = process.env.BFF_SESSION_COOKIE || 'next-auth.session-token';
+    if (!sessionData) {
+      const session = await getServerSession(req, res, authOptions);
+      if (session) {
+        userId = session.user?.id;
+        idToken = session.idToken;
+      }
+    }
 
-    res.setHeader('Set-Cookie', [
-      `${sessionCookieName}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax`,
-      `${sessionCookieName}.sig=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax`
-    ]);
+    console.log('[Logout] User ID:', userId, 'Has ID Token:', !!idToken);
 
-    const reactClientUrl = process.env.REACT_CLIENT_URL || 'http://localhost:5174';
+    if (userId) {
+      try {
+        console.log(`[Logout] Revoking tokens for user ${userId}`);
+        await TokenRepository.deleteRefreshToken(userId);
+      } catch (dbError) {
+        console.warn('[Logout] Failed to delete refresh token from DB:', dbError);
+      }
+    }
+
+    const cookiesToClear = [
+      'bff_session',
+      'next-auth.session-token',
+      '__Secure-next-auth.session-token',
+      '__Host-next-auth.session-token',
+    ];
+
+    const expiredCookies = cookiesToClear.map(name =>
+      `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax`
+    );
+
+    res.setHeader('Set-Cookie', expiredCookies);
+
+    const reactClientUrl = process.env.REACT_CLIENT_URL || 'http://localhost:5173';
     const authServerUrl = process.env.AUTH_SERVER_ISSUER || 'http://localhost:9000';
     const postLogoutRedirectUri = `${reactClientUrl}/login`;
 
-    const authServerLogoutUrl = `${authServerUrl}/logout?post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri)}`;
+    const params = new URLSearchParams();
+    params.append('post_logout_redirect_uri', postLogoutRedirectUri);
 
-    console.log(`[Logout] Redirecting to Authorization Server logout: ${authServerLogoutUrl}`);
+    if (idToken) {
+      params.append('id_token_hint', idToken);
+    }
+
+    const authServerLogoutUrl = `${authServerUrl}/connect/logout?${params.toString()}`;
+
+    console.log(`[Logout] Redirecting to: ${authServerLogoutUrl}`);
 
     return res.status(200).json({
       success: true,
       redirectUrl: authServerLogoutUrl
     });
+
   } catch (error) {
     console.error('[Logout] Error during logout:', error);
     return res.status(500).json({ error: 'Logout failed' });

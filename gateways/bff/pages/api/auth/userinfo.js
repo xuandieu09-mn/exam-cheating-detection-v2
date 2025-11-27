@@ -20,6 +20,19 @@ export default async function handler(req, res) {
     const session = await getServerSession(req, res, authOptions);
     if (session && session.accessToken) {
       accessToken = session.accessToken;
+    } else {
+      const sessionCookie = req.cookies['bff_session'];
+      if (sessionCookie) {
+        try {
+          const sessionData = JSON.parse(decodeURIComponent(sessionCookie));
+          if (sessionData && sessionData.accessToken) {
+            accessToken = sessionData.accessToken;
+            console.log('BFF /api/auth/userinfo: using token from custom session cookie');
+          }
+        } catch (e) {
+          console.error('BFF /api/auth/userinfo: failed to parse custom session cookie:', e);
+        }
+      }
     }
   }
 
@@ -34,6 +47,7 @@ export default async function handler(req, res) {
       : accessToken;
     console.log(`BFF /api/auth/userinfo: using token=${masked}`);
 
+    let jwtAuthorities = null;
     try {
       const parts = accessToken.split('.');
       if (parts.length === 3) {
@@ -45,7 +59,12 @@ export default async function handler(req, res) {
           iss: payload.iss,
           exp: payload.exp,
           iat: payload.iat,
+          scope: payload.scope,
+          authorities: payload.authorities,
         });
+        if (payload.authorities && Array.isArray(payload.authorities)) {
+          jwtAuthorities = payload.authorities;
+        }
       } else {
         console.log('BFF /api/auth/userinfo: access token is opaque (not JWT) length=', accessToken.length);
       }
@@ -70,7 +89,6 @@ export default async function handler(req, res) {
       }
       console.error(`BFF /api/auth/userinfo: upstream returned ${response.status}: ${text}`);
 
-      // If upstream returned 401, attempt introspection (if configured) to get more details
       if (response.status === 401) {
         try {
           const introspectUrl = process.env.AUTH_SERVER_INTROSPECT_URL || `${authServerUrl}/oauth2/introspect`;
@@ -106,7 +124,6 @@ export default async function handler(req, res) {
       }
     }
 
-    // Upstream OK
     let data;
     try {
       data = await response.json();
@@ -114,6 +131,12 @@ export default async function handler(req, res) {
       console.error('BFF /api/auth/userinfo: failed to parse upstream JSON:', e);
       return res.status(502).json({ error: 'Invalid JSON from auth server' });
     }
+
+    if (jwtAuthorities && (!data.authorities || data.authorities.length === 0)) {
+      data.authorities = jwtAuthorities;
+      console.log('BFF /api/auth/userinfo: merged authorities from JWT into profile:', jwtAuthorities);
+    }
+
     console.log('BFF /api/auth/userinfo: upstream returned OK, profile=', data);
     return res.status(200).json(data);
   } catch (error) {

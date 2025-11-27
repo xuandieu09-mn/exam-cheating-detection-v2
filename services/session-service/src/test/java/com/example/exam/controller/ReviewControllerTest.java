@@ -57,7 +57,7 @@ class ReviewControllerTest {
 
         ReviewDto.CreateRequest req = new ReviewDto.CreateRequest();
         req.incidentId = incidentId;
-        req.reviewerId = UUID.randomUUID();
+        req.reviewerId = UUID.randomUUID().toString();
         req.status = ReviewStatus.CONFIRMED;
         req.note = "looks legit";
 

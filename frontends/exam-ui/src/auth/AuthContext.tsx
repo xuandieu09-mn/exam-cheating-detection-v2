@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { apiClient } from '../api/client';
 import axios from 'axios';
 
-export type UserRole = 'CANDIDATE' | 'PROCTOR' | 'ADMIN';
+export type UserRole = 'CANDIDATE' | 'PROCTOR' | 'ADMIN' | 'REVIEWER';
 
 export interface User {
   id: string;
@@ -26,12 +26,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper để convert roles từ JWT thành UserRole
 const getUserRoleFromRoles = (roles?: string[] | null): UserRole => {
   const r = roles ?? [];
+  console.log('[AuthContext] Checking roles:', r);
   if (r.includes('ROLE_ADMIN') || r.includes('ADMIN')) return 'ADMIN';
+  if (r.includes('ROLE_REVIEWER') || r.includes('REVIEWER')) return 'PROCTOR';
   if (r.includes('ROLE_PROCTOR') || r.includes('PROCTOR')) return 'PROCTOR';
+  if (r.includes('ROLE_CANDIDATE') || r.includes('CANDIDATE')) return 'CANDIDATE';
   return 'CANDIDATE';
+};
+
+const extractRolesFromProfile = (profile: any): string[] => {
+  const roles = profile.roles || profile.authorities || [];
+  return Array.isArray(roles) ? roles : [];
 };
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -39,18 +46,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState<boolean>(true);
 
 
-  // Load user từ session (BFF) khi component mount
   useEffect(() => {
     let isMounted = true;
 
     const initAuth = async () => {
       try {
-        // Fetch user info from BFF (uses HttpOnly cookie)
         const response = await axios.get('/api/auth/userinfo');
         const profile = response.data;
 
         if (profile && isMounted) {
-          const roles = profile.roles ?? [];
+          const roles = extractRolesFromProfile(profile);
+          console.log('[AuthContext] Profile received:', { sub: profile.sub, roles, authorities: profile.authorities });
           const userData: User = {
             id: profile.sub,
             username: profile.username || profile.preferred_username || profile.email,
@@ -59,12 +65,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             role: getUserRoleFromRoles(roles),
             roles,
           };
+          console.log('[AuthContext] User role determined:', userData.role);
           setUser(userData);
         }
       } catch (error) {
-        // 401 means not logged in, which is fine.
-        // Network errors (backend down) are also possible on init.
-        // We just treat this as "not authenticated".
         if (isMounted) {
           setUser(null);
         }
@@ -85,7 +89,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const setUserFromProfile = (profile: any) => {
     if (!profile) return;
     try {
-      const roles = profile.roles ?? [];
+      const roles = extractRolesFromProfile(profile);
+      console.log('[AuthContext] setUserFromProfile:', { sub: profile.sub, roles, authorities: profile.authorities });
       const userData: User = {
         id: profile.sub,
         username: profile.username || profile.preferred_username || profile.email,
@@ -94,14 +99,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         role: getUserRoleFromRoles(roles),
         roles,
       };
+      console.log('[AuthContext] User role determined:', userData.role);
       setUser(userData);
     } catch (err) {
       console.error('Failed to set user from profile:', err);
     }
   };
 
-  const loginWithCredentials = async (username: string, password: string) => {
-    // Legacy method - redirect to OAuth2 login instead
+  const loginWithCredentials = async (_username: string, _password: string) => {
     loginWithOAuth2();
   };
 
@@ -111,14 +116,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = async () => {
     try {
-      // Clear user state immediately
       setUser(null);
 
-      // Call BFF logout endpoint (which will redirect to signout page)
       await apiClient.logout();
     } catch (error) {
       console.error('Logout error:', error);
-      // Even if logout fails, redirect to login
       window.location.href = '/login';
     }
   };

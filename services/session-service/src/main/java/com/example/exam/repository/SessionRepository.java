@@ -11,7 +11,7 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
     /**
      * Find all sessions for a specific user, ordered by started_at descending
      */
-    List<Session> findByUserIdOrderByStartedAtDesc(UUID userId);
+    List<Session> findByUserIdOrderByStartedAtDesc(String userId);
     
     /**
      * Find all sessions for a specific exam

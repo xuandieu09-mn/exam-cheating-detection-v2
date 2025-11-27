@@ -10,5 +10,5 @@ import java.util.UUID;
 
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
     Optional<Review> findByIncidentId(UUID incidentId);
-    List<Review> findByReviewerIdAndStatus(UUID reviewerId, ReviewStatus status);
+    List<Review> findByReviewerIdAndStatus(String reviewerId, ReviewStatus status);
 }

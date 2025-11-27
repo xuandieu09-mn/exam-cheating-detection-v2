@@ -24,6 +24,8 @@ import { ExamsPage } from './roles/ExamsPage';
 import { MyResultsPage } from './roles/MyResultsPage';
 import { MyViolationsPage } from './roles/MyViolationsPage';
 
+
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -137,6 +139,101 @@ const App: React.FC = () => {
         <Route
           path="/my-violations"
           element={<Navigate to="/candidate/my-violations" replace />}
+        />
+
+        {/* Admin routes */}
+        <Route
+          path="/admin/manage-exams"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <DashboardLayout>
+                <div style={{ padding: 24, background: 'white', borderRadius: 8 }}>
+                  <h2>📚 Quản lý kỳ thi</h2>
+                  <p>Trang quản lý kỳ thi đang được phát triển...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/exam-statistics"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <DashboardLayout>
+                <div style={{ padding: 24, background: 'white', borderRadius: 8 }}>
+                  <h2>📈 Thống kê</h2>
+                  <p>Trang thống kê đang được phát triển...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/all-violations"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <DashboardLayout>
+                <div style={{ padding: 24, background: 'white', borderRadius: 8 }}>
+                  <h2>⚠️ Tất cả vi phạm</h2>
+                  <p>Trang quản lý vi phạm đang được phát triển...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/system-settings"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <DashboardLayout>
+                <div style={{ padding: 24, background: 'white', borderRadius: 8 }}>
+                  <h2>⚙️ Cài đặt hệ thống</h2>
+                  <p>Trang cài đặt đang được phát triển...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Proctor routes (also accessible by REVIEWER) */}
+        <Route
+          path="/proctor/active-exams"
+          element={
+            <ProtectedRoute allowedRoles={['PROCTOR', 'REVIEWER']}>
+              <DashboardLayout>
+                <div style={{ padding: 24, background: 'white', borderRadius: 8 }}>
+                  <h2>📝 Kỳ thi đang mở</h2>
+                  <p>Trang kỳ thi đang mở đang được phát triển...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/proctor/violations"
+          element={
+            <ProtectedRoute allowedRoles={['PROCTOR', 'REVIEWER']}>
+              <DashboardLayout>
+                <div style={{ padding: 24, background: 'white', borderRadius: 8 }}>
+                  <h2>🚨 Danh sách vi phạm</h2>
+                  <p>Trang danh sách vi phạm đang được phát triển...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/proctor/live-monitoring"
+          element={
+            <ProtectedRoute allowedRoles={['PROCTOR', 'REVIEWER']}>
+              <DashboardLayout>
+                <div style={{ padding: 24, background: 'white', borderRadius: 8 }}>
+                  <h2>📹 Giám sát trực tiếp</h2>
+                  <p>Trang giám sát trực tiếp đang được phát triển...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
         />
 
         {/* Default redirect */}
