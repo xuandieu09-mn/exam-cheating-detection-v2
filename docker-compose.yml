@@ -1,21 +1,25 @@
+name: exam-cheating-detection-v2
+
 services:
+  # --- Infrastructure ---
   postgres:
-    image: postgres:15
-    container_name: examdb
+    image: postgres:16.3
+    container_name: exam-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: examdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      TZ: UTC
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "55432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/docker/postgres/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d examdb"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 3s
       retries: 20
-    volumes:
-      - pgdata:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
@@ -29,7 +33,6 @@ services:
       retries: 20
     volumes:
       - redis-data:/data
-    command: redis-server --appendonly yes
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -37,10 +40,9 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
-      TZ: UTC
     ports:
-      - "5672:5672"   # AMQP port
-      - "15672:15672" # Management UI
+      - "5672:5672"
+      - "15672:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -49,12 +51,123 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
-  backend:
+  otel-collector:
+    image: otel/opentelemetry-collector:0.88.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./services/auth-server/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4318:4318"
+
+  authorization-server:
     build:
-      context: ./backend
+      context: ./services/auth-server
       dockerfile: Dockerfile
+    container_name: exam-auth-server
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/examdb
+      OAUTH_DB_URL: jdbc:postgresql://postgres:5432/identity_db
+      OAUTH_DB_USERNAME: postgres
+      OAUTH_DB_PASSWORD: postgres
+      AS_ISSUER_URI: http://localhost:9000
+      AS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost:5174
+      BFF_CLIENT_ID: exam-bff-client
+      BFF_CLIENT_SECRET: exam-bff-secret
+      BFF_REDIRECT_URI: http://localhost:8080/api/auth/callback/exam-oidc
+      SPA_CLIENT_ID: react-test-client
+      SPA_REDIRECT_URI: http://localhost:5174/auth/callback
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY_AUTHENTICATION: DEBUG
+      SPRING_SECURITY_DEBUG: true
+    ports:
+      - "9000:9000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: exam-user-service
+    environment:
+      UMS_DB_URL: jdbc:postgresql://postgres:5432/identity_db
+      UMS_DB_USERNAME: postgres
+      UMS_DB_PASSWORD: postgres
+      AS_ISSUER_URI: http://localhost:9000
+      AS_JWK_SET_URI: http://authorization-server:9000/oauth2/jwks
+    ports:
+      - "8100:8100"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      authorization-server:
+        condition: service_started
+
+  admin-service:
+    build:
+      context: ./services/admin-service
+      dockerfile: Dockerfile
+    container_name: exam-admin-service
+    environment:
+      OAUTH_DB_URL: jdbc:postgresql://postgres:5432/identity_db
+      OAUTH_DB_USERNAME: postgres
+      OAUTH_DB_PASSWORD: postgres
+      ADMIN_API_USERNAME: admin
+      ADMIN_API_PASSWORD: admin-secret
+      BFF_CLIENT_ID: exam-bff-client
+      BFF_CLIENT_SECRET: exam-bff-secret
+      BFF_REDIRECT_URI: http://localhost:8080/api/auth/callback/exam-oidc
+      BFF_LOGOUT_REDIRECT: http://localhost:8080
+      AS_ISSUER_URI: http://localhost:9000
+    ports:
+      - "8200:8200"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  bff-gateway:
+    build:
+      context: ./gateways/bff
+      dockerfile: Dockerfile
+    container_name: exam-bff
+    environment:
+      NODE_ENV: production
+      NEXTAUTH_URL: http://localhost:8080
+      NEXTAUTH_SECRET: 8f4b2e9a1d3c5f6e7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f
+      BFF_CLIENT_ID: exam-bff-client
+      BFF_CLIENT_SECRET: exam-bff-secret
+      AUTH_SERVER_ISSUER: http://authorization-server:9000
+      AUTH_SERVER_TOKEN_URL: http://authorization-server:9000/oauth2/token
+      AUTH_SERVER_USERINFO_URL: http://authorization-server:9000/userinfo
+      AUTH_SERVER_URL: http://authorization-server:9000
+      AUTH_SERVER_EXTERNAL_URL: http://localhost:9000
+      UPSTREAM_API_BASE_URL: http://user-service:8100
+      SESSION_SERVICE_URL: http://session-service:8081
+      BFF_SCOPES: openid profile exam.read exam.write offline_access
+      BFF_SESSION_COOKIE: SESSION_ID
+      BFF_DB_HOST: postgres
+      BFF_DB_PORT: 5432
+      BFF_DB_NAME: bff_db
+      BFF_DB_USER: postgres
+      BFF_DB_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      authorization-server:
+        condition: service_started
+      user-service:
+        condition: service_started
+
+  session-service:
+    build:
+      context: ./services/session-service
+      dockerfile: Dockerfile
+    container_name: exam-session-service
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/session_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_DATA_REDIS_HOST: redis
@@ -64,11 +177,13 @@ services:
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
       SPRING_PROFILES_ACTIVE: dev
-      TZ: UTC
-      MEDIA_UPLOAD_DIR: /app/uploads
-      SECURITY_REQUIRE_AUTH: "false"
+      SECURITY_REQUIRE_AUTH: "true"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://authorization-server:9000/oauth2/jwks
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_SPRING_TOKEN_URI: http://authorization-server:9000/oauth2/token
+      SPRING_FLYWAY_BASELINE-ON-MIGRATE: "true"
+      SPRING_FLYWAY_BASELINE-VERSION: "0"
     ports:
-      - "8080:8080"
+      - "8081:8081"
     depends_on:
       postgres:
         condition: service_healthy
@@ -76,11 +191,41 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      authorization-server:
+        condition: service_started
     volumes:
       - uploads:/app/uploads
 
+  # --- Frontends ---
+  admin-ui:
+    build:
+      context: ./frontends/admin-ui
+      dockerfile: Dockerfile
+      args:
+        VITE_OIDC_ISSUER: http://localhost:9000
+        VITE_OIDC_CLIENT_ID: react-test-client
+        VITE_OIDC_REDIRECT_URI: http://localhost:5173/auth/callback
+        VITE_OIDC_SCOPE: "openid profile exam.read"
+    container_name: exam-admin-ui
+    ports:
+      - "5173:80"
+    depends_on:
+      authorization-server:
+        condition: service_started
+
+  exam-ui:
+    build:
+      context: ./frontends/exam-ui
+      dockerfile: Dockerfile
+    container_name: exam-ui
+    ports:
+      - "5174:80" # Changed to 5174 to avoid conflict
+    depends_on:
+      bff-gateway:
+        condition: service_started
+
 volumes:
-  pgdata:
+  postgres-data:
   redis-data:
   rabbitmq-data:
   uploads:
