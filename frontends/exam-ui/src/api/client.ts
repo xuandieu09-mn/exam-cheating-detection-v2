@@ -54,6 +54,7 @@ class ApiClient {
   }
 
   async register(data: any): Promise<any> {
+    // Public endpoint - doesn't require authentication
     const response = await axios.post('/api/register', data);
     return response.data;
   }

@@ -380,25 +380,23 @@ public class AuthorizationServerSecurityConfig {
         this.properties = properties;
     }
 
-    // 1. Protocol Endpoint Filter Chain (OIDC, OAuth2)
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
             .authorizationEndpoint(auth -> auth.consentPage("/oauth2/consent"))
-            .oidc(Customizer.withDefaults()); // Enable OpenID Connect (bao gồm cả Logout Endpoint)
+            .oidc(Customizer.withDefaults()); 
 
         http.exceptionHandling(ex -> ex.defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint("/login"),
                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
-            .cors(Customizer.withDefaults()); // Sử dụng bean corsConfigurationSource bên dưới
+            .cors(Customizer.withDefaults()); 
 
         return http.build();
     }
 
-    // 2. App Authentication Filter Chain (Login Form)
     @Bean
     @Order(2)
     public SecurityFilterChain appSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -417,15 +415,12 @@ public class AuthorizationServerSecurityConfig {
         return http.build();
     }
 
-    // 3. Token Customizer (Logic đưa Authority vào Token)
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> authoritiesClaimCustomizer() {
         return context -> {
-            // Chỉ thêm claim vào Access Token
             if (org.springframework.security.oauth2.server.authorization.OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
                 Authentication principal = context.getPrincipal();
                 
-                // Logic lấy authorities chuẩn từ Principal
                 Set<String> authorities = principal.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toSet());
@@ -438,8 +433,6 @@ public class AuthorizationServerSecurityConfig {
         };
     }
 
-    // ---------- Standard Beans (Không cần custom phức tạp) ----------
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
@@ -450,7 +443,6 @@ public class AuthorizationServerSecurityConfig {
         return new JdbcRegisteredClientRepository(jdbcTemplate);
     }
 
-    // Sử dụng bean mặc định của Spring, không cần tự build ObjectMapper phức tạp
     @Bean
     public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
                                                            RegisteredClientRepository registeredClientRepository) {
@@ -483,7 +475,6 @@ public class AuthorizationServerSecurityConfig {
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);
-        // Lấy origin từ properties hoặc fallback
         if (properties.cors() != null && properties.cors().allowedOrigins() != null) {
             config.setAllowedOrigins(List.of(properties.cors().allowedOrigins()));
         } else {
